@@ -6,14 +6,10 @@
 </head>
 <body>
   <div id="flight">
-    <div id="banner-wrap"><div id="banner"></div></div>
-    <div id="rope"></div>
-    <div id="aircraft">
-      <svg id="plane-svg" viewBox="0 0 120 70" aria-hidden="true">
-        <path d="M2 40 L78 36 L96 18 L104 18 L98 36 L116 35 Q120 36 116 38 L60 46 L40 60 L32 60 L40 46 L14 48 Z" />
-      </svg>
-      <div id="propeller"></div>
-    </div>
+    <aircraft-banner>
+      <div id="banner"></div>
+      <div id="aircraft"><div id="propeller"></div></div>
+    </aircraft-banner>
   </div>
   <script src="plane.js"></script>
 </body>
