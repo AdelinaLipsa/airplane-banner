@@ -8,7 +8,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: transparent;
 /* The whole plane+banner assembly flies across the screen once. */
 #flight {
   position: absolute;
-  top: 12vh;
+  top: 14vh;
   left: 0;
   transform: translateX(-95vw);
   will-change: transform;
@@ -19,12 +19,13 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: transparent;
   to   { transform: translateX(125vw); }
 }
 
-aircraft-banner { position: relative; display: block; }
+/* banner — rope — plane, laid out left to right, vertically centered.
+   The plane is on the right so it leads as the assembly flies rightward. */
+#assembly { display: flex; align-items: center; }
 
 /* Rippling fabric banner — built from waving canvas slices in plane.js. */
 #banner {
   display: flex;
-  transform: scale(0.7) translateY(40px);
   filter: drop-shadow(6px 6px 0 var(--pop));
 }
 .segment {
@@ -38,45 +39,45 @@ aircraft-banner { position: relative; display: block; }
   50%      { transform: translateY(7px); }
 }
 
-/* Original CodePen plane sprite, hue-shifted toward the retro indigo. */
-#aircraft {
-  position: absolute;
-  width: 230px;
-  aspect-ratio: 1 / 1;
-  z-index: 1;
-  background-image: url("plane.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  transform: translate(520px, -10px);
-  filter: grayscale(1) sepia(1) hue-rotate(196deg) saturate(5)
-          brightness(0.82) contrast(1.05) drop-shadow(5px 5px 0 var(--pop));
-}
-/* Two waving tow-lines connecting the plane to the banner. */
-#aircraft::before, #aircraft::after {
+/* Two waving tow-lines from the banner to the plane. */
+#rope { position: relative; width: 70px; height: 70px; flex: 0 0 auto; }
+#rope::before, #rope::after {
   content: "";
   position: absolute;
-  top: 80px;
-  left: -150px;
-  width: 180px;
+  left: -6px; right: -6px;
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--ink), transparent);
 }
-#aircraft::before { transform: translateY(-12px) rotate(4deg); animation: waveline1 2s infinite ease-in-out; }
-#aircraft::after  { transform: translateY(13px) rotate(-4deg); animation: waveline2 2s infinite ease-in-out; }
-@keyframes waveline1 { 0%,100% { transform: translateY(-10px) rotate(4deg); } 50% { transform: translateY(-11px) rotate(5deg); } }
-@keyframes waveline2 { 0%,100% { transform: translateY(13px) rotate(-4deg); } 50% { transform: translateY(14px) rotate(-5deg); } }
+#rope::before { top: 22px; animation: waveline1 2s infinite ease-in-out; }
+#rope::after  { bottom: 22px; animation: waveline2 2s infinite ease-in-out; }
+@keyframes waveline1 { 0%,100% { transform: translateY(-2px) rotate(3deg); } 50% { transform: translateY(-3px) rotate(4deg); } }
+@keyframes waveline2 { 0%,100% { transform: translateY(2px) rotate(-3deg); } 50% { transform: translateY(3px) rotate(-4deg); } }
 
-/* Spinning propeller disc over the nose. */
+/* Original CodePen plane sprite (trimmed), hue-shifted toward retro indigo. */
+#aircraft {
+  position: relative;
+  flex: 0 0 auto;
+  width: 240px;
+  aspect-ratio: 935 / 458;
+  background-image: url("plane.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: grayscale(1) sepia(1) hue-rotate(196deg) saturate(5)
+          brightness(0.82) contrast(1.05) drop-shadow(5px 5px 0 var(--pop));
+}
+
+/* Spinning propeller disc at the nose (right tip of the plane). */
 #propeller {
   position: absolute;
-  display: block;
-  z-index: 10;
+  right: -4px;
+  top: 50%;
   width: 200px;
   height: 200px;
   background: radial-gradient(circle, #ffffff00 0%, var(--ink) 50%);
   border-radius: 50%;
   opacity: 0.35;
-  transform: translate(700px, -5px) scale(0.22);
+  transform: translate(-50%, -50%) scale(0.22);
 }
 #propeller::before {
   content: " ";
