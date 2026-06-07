@@ -17,7 +17,7 @@ const scheduler = createScheduler({
     paused: settings.get('paused'),
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
   }),
-  onFly: (payload) => flyBanner(payload),
+  onFly: (payload) => flyBanner({ ...payload, showTitle: settings.get('showTitle') }),
 });
 
 function openSettings() { openSettingsWindow(); }
@@ -47,7 +47,8 @@ function nextMeetingLine(events) {
   if (!events.length) return 'No meetings soon';
   const e = events[0];
   const mins = Math.max(0, Math.round((e.start - Date.now()) / 60000));
-  return `Next: ${e.title} in ${mins} min`;
+  const title = e.title.length > 40 ? e.title.slice(0, 39) + '…' : e.title;
+  return `Next: ${title} in ${mins} min`;
 }
 
 async function poll() {

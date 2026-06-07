@@ -1,7 +1,10 @@
 const flight = document.getElementById('flight');
 const banner = document.getElementById('banner');
 
-function formatText(minutes, title) {
+function formatText(minutes, title, showTitle = true) {
+  if (!showTitle) {
+    return minutes > 0 ? `NEXT MEETING IN ${minutes} MIN` : 'MEETING NOW';
+  }
   const t = (title || 'Meeting').toUpperCase();
   return minutes > 0 ? `${minutes} MIN → ${t}` : `NOW → ${t}`;
 }
@@ -18,7 +21,7 @@ function setBanner(text) {
 }
 
 function fly(payload) {
-  setBanner(formatText(payload.minutes, payload.title));
+  setBanner(formatText(payload.minutes, payload.title, payload.showTitle !== false));
   flight.classList.remove('flying');
   void flight.offsetWidth; // restart the CSS animation
   flight.classList.add('flying');
