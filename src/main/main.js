@@ -42,7 +42,7 @@ ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPol
 ipcMain.handle('auth:signOut', () => { auth.signOut(); scheduler.clear(); return true; });
 ipcMain.handle('auth:status', () => ({
   signedIn: auth.hasValidAuth(),
-  hasCredentials: !!(settings.get('oauthClientId') && settings.get('oauthClientSecret')),
+  hasCredentials: auth.hasCredentials(),
 }));
 
 let pollTimer = null;

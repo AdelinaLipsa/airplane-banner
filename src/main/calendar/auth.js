@@ -4,15 +4,19 @@ const { URL } = require('url');
 const { shell } = require('electron');
 const { OAuth2Client } = require('google-auth-library');
 const settings = require('../settings');
+const embedded = require('../oauth-credentials');
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
+// Prefer a per-user override from settings, otherwise the embedded app client.
+function clientId() { return settings.get('oauthClientId') || embedded.clientId; }
+function clientSecret() { return settings.get('oauthClientSecret') || embedded.clientSecret; }
+
+// True when the app has OAuth credentials available (embedded or overridden).
+function hasCredentials() { return !!(clientId() && clientSecret()); }
+
 function makeClient(redirectUri) {
-  return new OAuth2Client(
-    settings.get('oauthClientId'),
-    settings.get('oauthClientSecret'),
-    redirectUri,
-  );
+  return new OAuth2Client(clientId(), clientSecret(), redirectUri);
 }
 
 // Returns an authorized client using stored tokens, or null if not signed in.
@@ -36,8 +40,8 @@ function hasValidAuth() {
 // Opens the system browser, runs the loopback OAuth flow, stores tokens.
 function startAuthFlow() {
   return new Promise((resolve, reject) => {
-    if (!settings.get('oauthClientId') || !settings.get('oauthClientSecret')) {
-      reject(new Error('Missing OAuth client id/secret. Add them in Settings.'));
+    if (!hasCredentials()) {
+      reject(new Error('This build has no Google OAuth client configured.'));
       return;
     }
     let timeout;
@@ -81,4 +85,4 @@ function startAuthFlow() {
 
 function signOut() { settings.clearTokens(); }
 
-module.exports = { getOAuthClient, hasValidAuth, startAuthFlow, signOut, SCOPES };
+module.exports = { getOAuthClient, hasValidAuth, hasCredentials, startAuthFlow, signOut, SCOPES };

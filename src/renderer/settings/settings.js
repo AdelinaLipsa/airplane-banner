@@ -5,13 +5,12 @@ async function refreshStatus() {
   const s = await api.authStatus();
   $('status').textContent = s.signedIn
     ? '✅ Connected to Google Calendar'
-    : (s.hasCredentials ? 'Not signed in.' : 'Enter your OAuth credentials, then sign in.');
+    : (s.hasCredentials ? 'Not signed in.' : 'This build isn’t configured for Google sign-in yet.');
+  $('signIn').disabled = !s.hasCredentials;
 }
 
 async function load() {
   const c = await api.load();
-  $('clientId').value = c.oauthClientId || '';
-  $('clientSecret').value = c.oauthClientSecret || '';
   $('offsets').value = (c.reminderOffsetsMinutes || []).join(', ');
   $('skipAllDay').checked = c.filters.skipAllDay;
   $('skipDeclined').checked = c.filters.skipDeclined;
@@ -27,8 +26,6 @@ function collect() {
     .map((x) => parseInt(x.trim(), 10))
     .filter((n) => Number.isFinite(n) && n >= 0);
   return {
-    oauthClientId: $('clientId').value.trim(),
-    oauthClientSecret: $('clientSecret').value.trim(),
     reminderOffsetsMinutes: offsets.length ? offsets : [15, 5, 0],
     filters: {
       skipAllDay: $('skipAllDay').checked,
@@ -47,7 +44,7 @@ $('save').addEventListener('click', async () => {
   setTimeout(() => ($('saved').textContent = ''), 1500);
 });
 $('signIn').addEventListener('click', async () => {
-  await api.save(collect());          // persist credentials first
+  await api.save(collect());          // persist any settings changes first
   $('status').textContent = 'Opening browser…';
   try { await api.signIn(); } catch (e) { $('status').textContent = 'Error: ' + e.message; }
   await refreshStatus();
