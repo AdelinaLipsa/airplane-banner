@@ -31,6 +31,7 @@ ipcMain.handle('settings:save', (_e, patch) => {
   for (const [k, v] of Object.entries(patch)) settings.set(k, v);
   applyLaunchAtLogin();
   if (tray) tray.refresh();
+  if (auth.hasValidAuth()) startPolling();
   return settings.getAll();
 });
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });
