@@ -1,5 +1,6 @@
 const { app, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
+const { flyBanner } = require('./windows/overlay-window');
 
 let tray = null;
 
