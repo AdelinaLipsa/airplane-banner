@@ -40,20 +40,26 @@ function startAuthFlow() {
       reject(new Error('Missing OAuth client id/secret. Add them in Settings.'));
       return;
     }
+    let timeout;
+    const finish = (fn, arg) => { clearTimeout(timeout); try { server.close(); } catch {} fn(arg); };
     const server = http.createServer(async (req, res) => {
       try {
         const reqUrl = new URL(req.url, `http://127.0.0.1:${port}`);
+        const authError = reqUrl.searchParams.get('error');
+        if (authError) {
+          res.end(`<html><body style="font-family:sans-serif">Sign-in canceled: ${authError}. You can close this tab.</body></html>`);
+          finish(reject, new Error(`Authorization failed: ${authError}`));
+          return;
+        }
         const code = reqUrl.searchParams.get('code');
         if (!code) { res.end('Waiting for Google…'); return; }
         res.end('<html><body style="font-family:sans-serif">✅ Signed in. You can close this tab.</body></html>');
-        server.close();
         const { tokens } = await client.getToken({ code, redirect_uri: redirectUri });
         settings.saveTokens(tokens);
-        resolve(tokens);
+        finish(resolve, tokens);
       } catch (err) {
         try { res.end('Error: ' + err.message); } catch {}
-        server.close();
-        reject(err);
+        finish(reject, err);
       }
     });
     let port; let redirectUri; let client;
@@ -68,7 +74,8 @@ function startAuthFlow() {
       });
       shell.openExternal(authUrl);
     });
-    server.on('error', reject);
+    server.on('error', (err) => finish(reject, err));
+    timeout = setTimeout(() => finish(reject, new Error('Sign-in timed out. Please try again.')), 5 * 60 * 1000);
   });
 }
 
