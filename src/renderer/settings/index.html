@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; color: #1e1b4b; }
+    h1 { font-size: 18px; }
+    fieldset { border: 1px solid #ddd; border-radius: 8px; margin: 14px 0; padding: 12px; }
+    legend { font-weight: 600; }
+    label { display: block; margin: 8px 0; font-size: 14px; }
+    input[type=text], input[type=password] { width: 100%; padding: 6px; box-sizing: border-box; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    button { background: #1e1b4b; color: #facc15; border: 0; border-radius: 6px;
+             padding: 8px 14px; font-weight: 700; cursor: pointer; }
+    #status { font-size: 13px; color: #555; }
+    .save-bar { position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>✈️ Airplane Banner</h1>
+
+  <fieldset>
+    <legend>Google Calendar</legend>
+    <p id="status">Checking…</p>
+    <label>OAuth Client ID
+      <input id="clientId" type="text" placeholder="xxxx.apps.googleusercontent.com" />
+    </label>
+    <label>OAuth Client Secret
+      <input id="clientSecret" type="password" placeholder="GOCSPX-…" />
+    </label>
+    <div class="row">
+      <button id="signIn">Sign in with Google</button>
+      <button id="signOut">Sign out</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Reminders</legend>
+    <label>Minutes before each meeting (comma-separated)
+      <input id="offsets" type="text" placeholder="15, 5, 0" />
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Which meetings</legend>
+    <label class="row"><input id="skipAllDay" type="checkbox" /> Skip all-day events</label>
+    <label class="row"><input id="skipDeclined" type="checkbox" /> Skip events I declined</label>
+    <label class="row"><input id="primaryCalendarOnly" type="checkbox" /> Primary calendar only</label>
+    <label class="row"><input id="requireAttendeesOrLink" type="checkbox" /> Require attendees or a video link</label>
+    <label class="row"><input id="showTitle" type="checkbox" /> Show meeting title on banner</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>App</legend>
+    <label class="row"><input id="launchAtLogin" type="checkbox" /> Launch at login</label>
+  </fieldset>
+
+  <div class="save-bar"><button id="save">Save</button> <span id="saved"></span></div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
