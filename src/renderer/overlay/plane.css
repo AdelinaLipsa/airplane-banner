@@ -67,30 +67,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: transparent;
           brightness(0.82) contrast(1.05) drop-shadow(5px 5px 0 var(--pop));
 }
 
-/* Spinning propeller disc at the nose (right tip of the plane). */
-#propeller {
-  position: absolute;
-  right: -4px;
-  top: 50%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, #ffffff00 0%, var(--ink) 50%);
-  border-radius: 50%;
-  opacity: 0.35;
-  transform: translate(-50%, -50%) scale(0.22);
-}
-#propeller::before {
-  content: " ";
-  position: absolute;
-  display: block;
-  width: 200px;
-  height: 200px;
-  background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 40%);
-  border-radius: 50%;
-  animation: rotate 0.1s linear infinite;
-}
-@keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
 @media (prefers-reduced-motion: reduce) {
-  .segment, #propeller::before { animation: none; }
+  .segment { animation: none; }
 }
