@@ -6,6 +6,9 @@ async function refreshStatus() {
   $('status').textContent = s.signedIn
     ? '✅ Connected to Google Calendar'
     : (s.hasCredentials ? 'Not signed in.' : 'This build isn’t configured for Google sign-in yet.');
+  // Show only the relevant button for the current state.
+  $('signIn').style.display = s.signedIn ? 'none' : '';
+  $('signOut').style.display = s.signedIn ? '' : 'none';
   $('signIn').disabled = !s.hasCredentials;
 }
 
