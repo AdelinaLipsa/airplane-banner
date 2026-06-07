@@ -1,0 +1,19 @@
+{
+  "name": "airplane-banner",
+  "version": "0.1.0",
+  "description": "An airplane flies a banner across your screen before Google Calendar meetings.",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "googleapis": "^140.0.0",
+    "google-auth-library": "^9.0.0"
+  }
+}
