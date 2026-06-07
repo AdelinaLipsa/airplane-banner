@@ -5,15 +5,32 @@
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "node --test"
+    "test": "node --test",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
   },
   "license": "MIT",
+  "build": {
+    "appId": "com.adelina.airplanebanner",
+    "productName": "Airplane Banner",
+    "files": ["src/**/*", "assets/**/*", "package.json"],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "extendInfo": { "LSUIElement": 1 }
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
   "devDependencies": {
-    "electron": "^31.0.0"
+    "electron": "^31.0.0",
+    "electron-builder": "^26.15.0"
   },
   "dependencies": {
     "electron-store": "^8.2.0",
-    "googleapis": "^140.0.0",
-    "google-auth-library": "^9.0.0"
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^140.0.0"
   }
 }
