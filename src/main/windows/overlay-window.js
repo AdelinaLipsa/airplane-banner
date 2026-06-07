@@ -2,6 +2,7 @@ const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
 
 let win = null;
+let pending = null;
 
 function build() {
   const display = screen.getPrimaryDisplay();
@@ -29,12 +30,21 @@ function build() {
 
 function flyBanner(payload) {
   const w = win || build();
-  const send = () => { w.showInactive(); w.webContents.send('fly', payload); };
   if (w.webContents.isLoading()) {
-    w.webContents.once('did-finish-load', send);
-  } else {
-    send();
+    const alreadyQueued = pending !== null;
+    pending = payload;
+    if (!alreadyQueued) {
+      w.webContents.once('did-finish-load', () => {
+        const p = pending;
+        pending = null;
+        w.showInactive();
+        w.webContents.send('fly', p);
+      });
+    }
+    return;
   }
+  w.showInactive();
+  w.webContents.send('fly', payload);
 }
 
 ipcMain.on('flight-done', () => { if (win) win.hide(); });
