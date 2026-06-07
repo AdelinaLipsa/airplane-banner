@@ -9,6 +9,10 @@ const { fetchUpcomingEvents } = require('./calendar/client');
 const { normalizeEvents } = require('./calendar/normalize');
 const { filterEvents } = require('./calendar/filter');
 
+// Transparent always-on-top overlay doesn't need GPU acceleration; disabling it
+// silences noisy GPU-process logs and improves transparent-window reliability.
+app.disableHardwareAcceleration();
+
 let tray = null;
 
 const scheduler = createScheduler({
