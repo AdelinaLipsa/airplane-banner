@@ -10,6 +10,6 @@
 // app and can be extracted. This is Google's expected model for installed
 // (desktop) apps, and the requested scope here is read-only calendar access.
 module.exports = {
-  clientId: '',
-  clientSecret: '',
+  clientId: '322885135471-gm2h336gu2uob6prtm94od8m9vupcv7e.apps.googleusercontent.com',
+  clientSecret: 'REDACTED-SECRET',
 };
