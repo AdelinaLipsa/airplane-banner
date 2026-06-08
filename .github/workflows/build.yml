@@ -29,6 +29,9 @@ jobs:
 
   build:
     needs: quality
+    # Only build/publish installers for releases (tag pushes) or manual runs —
+    # ordinary pushes to main just run the quality job.
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
