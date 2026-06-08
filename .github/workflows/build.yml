@@ -29,8 +29,7 @@ jobs:
 
   build:
     needs: quality
-    # Only build/publish installers for releases (tag pushes) or manual runs —
-    # ordinary pushes to main just run the quality job.
+    # Only build installers for releases (tag pushes) or manual runs.
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
@@ -48,7 +47,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm test
 
       # The real OAuth client lives in repo secrets (Settings → Secrets and
       # variables → Actions): OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET. Without
@@ -67,19 +65,37 @@ jobs:
             echo "No OAUTH_CLIENT_ID secret set — building without embedded sign-in."
           fi
 
-      # On a tag push, publish a GitHub Release (electron-updater feed); on
-      # branch/dispatch builds, just build the installers as artifacts.
-      - name: Build (and publish on tags)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ${{ matrix.build }} --publish ${{ startsWith(github.ref, 'refs/tags/') && 'always' || 'never' }}
+      # Build only — never publish here. A single release job (below) collects
+      # every platform's artifacts and publishes one clean release, avoiding the
+      # race where parallel per-platform publishes each create their own draft.
+      - run: ${{ matrix.build }} --publish never
 
       - uses: actions/upload-artifact@v4
         with:
-          name: installers-${{ matrix.os }}
+          name: dist-${{ matrix.os }}
           path: |
             dist/*.dmg
             dist/*.zip
             dist/*.exe
+            dist/*.blockmap
             dist/latest*.yml
           if-no-files-found: error
+
+  # One release for the tag: download every platform's artifacts and publish a
+  # single, non-draft GitHub Release (the electron-updater feed for all OSes).
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - run: ls -R artifacts
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          tag_name: ${{ github.ref_name }}
+          files: artifacts/**/*
+          fail_on_unmatched_files: true
