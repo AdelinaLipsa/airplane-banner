@@ -5,7 +5,7 @@ const settings = require('./settings');
 
 const MIN = 60000;
 
-function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSnooze, onTogglePause }) {
+function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSnooze, onTogglePause, onOpenLink }) {
   const icon = nativeImage.createFromPath(
     path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png'));
   const tray = new Tray(icon);
@@ -13,6 +13,27 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
 
   let statusLine = 'Starting…';
   let nextStart = null; // epoch ms of the next meeting, or null
+  let agenda = [];      // today's remaining meetings: [{ title, start, conferenceLink }]
+
+  function fmtTime(ts) {
+    return new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  // Build the "Today" section: each remaining meeting as time — title. Meetings
+  // with a video link are clickable to join; the rest are shown for reference.
+  function agendaItems() {
+    const upcoming = agenda.filter((e) => e.start > Date.now() - 60000);
+    if (!upcoming.length) return [{ label: 'No more meetings today', enabled: false }];
+    return upcoming.map((e) => {
+      const title = e.title.length > 38 ? e.title.slice(0, 37) + '…' : e.title;
+      const join = e.conferenceLink && onOpenLink;
+      return {
+        label: `${fmtTime(e.start)}  —  ${title}${join ? '  ↗' : ''}`,
+        enabled: !!join,
+        click: join ? () => onOpenLink(e.conferenceLink) : undefined,
+      };
+    });
+  }
 
   function build() {
     const paused = settings.get('paused');
@@ -23,6 +44,7 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
       : [];
     tray.setContextMenu(Menu.buildFromTemplate([
       { label: statusLine, enabled: false },
+      { label: 'Today', submenu: agendaItems() },
       { type: 'separator' },
       { label: 'Test flight', click: onTestFlight },
       { label: 'Schedule test flight (1 min)', click: onTestSchedule },
@@ -54,6 +76,7 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
   return {
     setStatus(line) { statusLine = line; build(); },
     setNextStart(ts) { nextStart = ts; },
+    setAgenda(events) { agenda = Array.isArray(events) ? events : []; build(); },
     refresh: build,
   };
 }

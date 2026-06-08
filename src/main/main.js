@@ -1,4 +1,4 @@
-const { app, ipcMain, powerMonitor } = require('electron');
+const { app, ipcMain, powerMonitor, shell } = require('electron');
 const settings = require('./settings');
 const { createTray } = require('./tray');
 const { flyBanner } = require('./windows/overlay-window');
@@ -99,17 +99,31 @@ function scheduleNextPoll(events) {
   pollTimer = setTimeout(poll, nextPollDelayMs(events));
 }
 
+function endOfLocalDay() {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
+}
+
 async function poll() {
   const client = auth.getOAuthClient();
   if (!client) { if (tray) tray.setStatus('Not signed in'); scheduleNextPoll(null); return; }
   try {
-    const raw = await fetchUpcomingEvents(client, { hoursAhead: 4 });
+    // Fetch at least 4h out, but always through end of today so the tray agenda
+    // shows every remaining meeting (not just those in the next few hours).
+    const hoursAhead = Math.max(4, (endOfLocalDay() - Date.now()) / 3600000 + 0.02);
+    const raw = await fetchUpcomingEvents(client, { hoursAhead });
     const events = filterEvents(normalizeEvents(raw, { calendarId: 'primary' }), settings.get('filters'))
       .filter((e) => Number.isFinite(e.start))
       .sort((a, b) => a.start - b.start);
     scheduler.update(events);
     settings.saveEvents(events); // so reminders are pre-armed on next launch
-    if (tray) { tray.setNextStart(events.length ? events[0].start : null); tray.setStatus(nextMeetingLine(events)); }
+    const agenda = events.filter((e) => e.start <= endOfLocalDay());
+    if (tray) {
+      tray.setNextStart(events.length ? events[0].start : null);
+      tray.setAgenda(agenda);
+      tray.setStatus(nextMeetingLine(events));
+    }
     scheduleNextPoll(events);
   } catch (err) {
     if (tray) tray.setStatus('⚠ Calendar unavailable');
@@ -139,6 +153,7 @@ app.whenReady().then(() => {
     onQuit: () => app.quit(),
     onSnooze: (until) => { settings.set('snoozeUntilEpochMs', until); tray.refresh(); },
     onTogglePause: () => { settings.set('paused', !settings.get('paused')); tray.refresh(); },
+    onOpenLink: (url) => { if (typeof url === 'string' && /^https?:\/\//.test(url)) shell.openExternal(url); },
   });
   tray.setStatus('No calendar connected');
   applyLaunchAtLogin();
@@ -148,6 +163,7 @@ app.whenReady().then(() => {
   if (cached.length) {
     scheduler.update(cached);
     tray.setNextStart(cached[0].start);
+    tray.setAgenda(cached.filter((e) => e.start <= endOfLocalDay()));
   }
   startPolling();
   powerMonitor.on('resume', () => poll());
