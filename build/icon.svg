@@ -34,8 +34,9 @@
       <line x1="560" y1="540" x2="648" y2="528"/>
     </g>
 
-    <!-- airplane (bold top-view silhouette, nose to the right) -->
-    <path d="M912 512 L772 488 L726 488 L628 404 L690 480 L658 480 L600 446 L644 488 L606 488 L606 536 L644 536 L600 578 L658 544 L690 544 L628 620 L726 536 L772 536 Z"
+    <!-- airplane (bold top-view silhouette, nose to the right; wing/tail tips
+         rounded with quadratic corners so they read soft, not spiky) -->
+    <path d="M888.3,516.1 Q912,512 888.3,507.9 L795.7,492.1 Q772,488 751.3,488 L746.7,488 Q726,488 707.8,472.4 L646.2,419.6 Q628,404 643.2,422.6 L674.8,461.4 Q690,480 675.6,480 L672.4,480 Q658,480 637.3,467.9 L620.7,458.1 Q600,446 617.4,462.6 L626.6,471.4 Q644,488 626.9,488 L623.1,488 Q606,488 606,509.6 L606,514.4 Q606,536 623.1,536 L626.9,536 Q644,536 626.6,552.6 L617.4,561.4 Q600,578 620.7,565.9 L637.3,556.1 Q658,544 672.4,544 L675.6,544 Q690,544 674.8,562.6 L643.2,601.4 Q628,620 646.2,604.4 L707.8,551.6 Q726,536 746.7,536 L751.3,536 Q772,536 795.7,531.9 Z"
           fill="#f8fafc" stroke="#1e1b4b" stroke-width="6" stroke-linejoin="round"/>
     <!-- pink fuselage stripe + cockpit -->
     <rect x="624" y="505" width="250" height="14" rx="7" fill="#f43f5e"/>
