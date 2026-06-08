@@ -143,6 +143,10 @@ function fly(payload) {
   currentLink = payload.link || null;
   clickable = !!(payload.clickable && currentLink);
   setInteractive(false);
+  // Flight duration (speed) is user-configurable; clamp to a sane range so the
+  // banner is never gone-in-a-blink or stuck onscreen forever.
+  const dur = Number(payload.durationSeconds);
+  flight.style.setProperty('--dur', (Number.isFinite(dur) ? Math.min(60, Math.max(4, dur)) : 12) + 's');
   flight.classList.remove('flying');
   void flight.offsetWidth; // restart the CSS animation
   flight.classList.add('flying');

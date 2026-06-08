@@ -21,6 +21,8 @@ async function load() {
   $('requireAttendeesOrLink').checked = c.filters.requireAttendeesOrLink;
   $('showTitle').checked = c.showTitle;
   $('theme').value = c.theme || 'retro';
+  $('flightDuration').value = c.flightDurationSeconds || 12;
+  updateDurLabel();
   $('sound').checked = !!c.sound;
   $('clickableBanner').checked = !!c.clickableBanner;
   $('launchAtLogin').checked = c.launchAtLogin;
@@ -41,11 +43,15 @@ function collect() {
     },
     showTitle: $('showTitle').checked,
     theme: $('theme').value,
+    flightDurationSeconds: parseInt($('flightDuration').value, 10) || 12,
     sound: $('sound').checked,
     clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
   };
 }
+
+function updateDurLabel() { $('durLabel').textContent = $('flightDuration').value + 's'; }
+$('flightDuration').addEventListener('input', updateDurLabel);
 
 $('save').addEventListener('click', async () => {
   await api.save(collect());

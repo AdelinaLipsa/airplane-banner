@@ -13,6 +13,7 @@ const DEFAULTS = {
   showTitle: true,
   theme: 'retro',
   sound: false,
+  flightDurationSeconds: 12,
   clickableBanner: false,
   launchAtLogin: true,
   pollIntervalMinutes: 5,
