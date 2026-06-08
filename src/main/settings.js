@@ -82,7 +82,26 @@ function addFired(keys) {
 }
 function clearFired() { store.set('firedReminders', {}); }
 
+// --- Event cache ----------------------------------------------------------
+// Persist the last fetched events so that, right after launch (before the first
+// network poll completes), the scheduler can already arm imminent reminders —
+// and so a brief offline window doesn't drop them. Only the few fields the
+// scheduler needs are stored.
+function saveEvents(events) {
+  const slim = (events || []).map((e) => ({
+    id: e.id, title: e.title, start: e.start, conferenceLink: e.conferenceLink || null,
+  }));
+  store.set('cachedEvents', slim);
+}
+// Return cached events that haven't started yet (older ones can't yield a
+// future reminder). A small grace window keeps just-started meetings around.
+function loadEvents() {
+  const list = store.get('cachedEvents') || [];
+  const cutoff = Date.now() - 60000;
+  return list.filter((e) => Number.isFinite(e.start) && e.start > cutoff);
+}
+
 module.exports = {
   DEFAULTS, getAll, get, set, saveTokens, loadTokens, clearTokens,
-  getFired, addFired, clearFired,
+  getFired, addFired, clearFired, saveEvents, loadEvents,
 };

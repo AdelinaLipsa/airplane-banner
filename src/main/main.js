@@ -107,6 +107,7 @@ async function poll() {
       .filter((e) => Number.isFinite(e.start))
       .sort((a, b) => a.start - b.start);
     scheduler.update(events);
+    settings.saveEvents(events); // so reminders are pre-armed on next launch
     if (tray) { tray.setNextStart(events.length ? events[0].start : null); tray.setStatus(nextMeetingLine(events)); }
     scheduleNextPoll(events);
   } catch (err) {
@@ -140,6 +141,13 @@ app.whenReady().then(() => {
   });
   tray.setStatus('No calendar connected');
   applyLaunchAtLogin();
+  // Arm reminders from the last cached events immediately, so a meeting that's
+  // due in the seconds-to-minutes before the first poll returns isn't missed.
+  const cached = settings.loadEvents();
+  if (cached.length) {
+    scheduler.update(cached);
+    tray.setNextStart(cached[0].start);
+  }
   startPolling();
   powerMonitor.on('resume', () => poll());
 });
