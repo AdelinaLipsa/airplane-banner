@@ -52,31 +52,31 @@ body[data-theme="retro"] #banner { filter: drop-shadow(6px 6px 0 var(--pop)); }
 @keyframes waveline1 { 0%,100% { transform: translateY(-2px) rotate(3deg); } 50% { transform: translateY(-3px) rotate(4deg); } }
 @keyframes waveline2 { 0%,100% { transform: translateY(2px) rotate(-3deg); } 50% { transform: translateY(3px) rotate(-4deg); } }
 
-/* Original CodePen plane sprite (trimmed), hue-shifted toward retro indigo. */
+/* TAROM ATR-72 sprite, shown in its natural livery. Only the per-theme hard
+   drop-shadow is applied (set in plane.js) so it pops against any wallpaper. */
 #aircraft {
   position: relative;
   flex: 0 0 auto;
-  width: 240px;
-  aspect-ratio: 935 / 458;
+  width: 320px;
+  aspect-ratio: 836 / 213;
   background-image: url("plane.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  filter: grayscale(1) sepia(1) hue-rotate(196deg) saturate(5)
-          brightness(0.82) contrast(1.05) drop-shadow(5px 5px 0 var(--pop));
+  filter: drop-shadow(5px 5px 0 var(--pop));
 }
 
-/* Spinning propeller disc centered on the nose (right tip of the plane). */
+/* Spinning propeller disc, overlaid on the ATR's visible engine nacelle
+   (just ahead of the wing) so the spin reads as the plane's own propeller. */
 #propeller {
   position: absolute;
-  right: 0;
-  top: 52%;
+  left: 69%;
+  top: 33%;
   width: 200px;
   height: 200px;
   border-radius: 50%;
   opacity: 0.45;
-  /* Center the (scaled) disc on the plane's right edge / nose. */
-  transform: translate(50%, -50%) scale(0.22);
+  transform: translate(-50%, -50%) scale(0.22);
 }
 #propeller::before {
   content: " ";

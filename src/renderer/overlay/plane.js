@@ -3,16 +3,12 @@ const banner = document.getElementById('banner');
 const aircraft = document.getElementById('aircraft');
 
 // Palettes selectable in Settings. `fabric`/`ink` color the canvas banner;
-// `pop` is the hard shadow; `planeFilter` hue-shifts the raster plane sprite.
+// `pop` is the hard drop-shadow behind the (natural-livery) plane sprite.
 const THEMES = {
-  retro:  { fabric: '#facc15', ink: '#1e1b4b', pop: '#f43f5e',
-            planeFilter: 'grayscale(1) sepia(1) hue-rotate(196deg) saturate(5) brightness(0.82) contrast(1.05)' },
-  aurora: { fabric: '#0b1020', ink: '#5eead4', pop: '#a78bfa',
-            planeFilter: 'grayscale(1) sepia(1) hue-rotate(120deg) saturate(4) brightness(0.95)' },
-  sunset: { fabric: '#fb7185', ink: '#ffffff', pop: '#f97316',
-            planeFilter: 'grayscale(1) sepia(1) saturate(6) hue-rotate(-25deg) brightness(1.0)' },
-  mono:   { fabric: '#0a0a0a', ink: '#fafafa', pop: '#9ca3af',
-            planeFilter: 'grayscale(1) contrast(1.2) brightness(0.6)' },
+  retro:  { fabric: '#facc15', ink: '#1e1b4b', pop: '#f43f5e' },
+  aurora: { fabric: '#0b1020', ink: '#5eead4', pop: '#a78bfa' },
+  sunset: { fabric: '#fb7185', ink: '#ffffff', pop: '#f97316' },
+  mono:   { fabric: '#0a0a0a', ink: '#fafafa', pop: '#9ca3af' },
 };
 
 function applyTheme(name) {
@@ -21,7 +17,8 @@ function applyTheme(name) {
   root.setProperty('--ink', t.ink);
   root.setProperty('--gold', t.fabric);
   root.setProperty('--pop', t.pop);
-  if (aircraft) aircraft.style.filter = `${t.planeFilter} drop-shadow(5px 5px 0 ${t.pop})`;
+  // The TAROM livery shows in its real colors; only the hard shadow is themed.
+  if (aircraft) aircraft.style.filter = `drop-shadow(5px 5px 0 ${t.pop})`;
   return t;
 }
 
