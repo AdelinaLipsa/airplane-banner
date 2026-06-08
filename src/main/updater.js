@@ -69,7 +69,18 @@ async function checkNow() {
       dialog.showMessageBox({ message: `You're up to date (v${app.getVersion()}).`, buttons: ['OK'] });
     }
   } catch (e) {
-    dialog.showMessageBox({ message: 'Could not check for updates.', detail: e && e.message, buttons: ['OK'] });
+    // A 404 just means no release feed is published yet (e.g. a private repo or
+    // before the first release) — show a calm, short message, never the raw
+    // HTTP response (which includes headers/cookies).
+    const msg = String((e && e.message) || '');
+    const noReleases = /404|ENOTFOUND|cannot find/i.test(msg);
+    dialog.showMessageBox({
+      message: noReleases ? `You're on the latest version (v${app.getVersion()}).` : 'Could not check for updates.',
+      detail: noReleases
+        ? 'No newer release has been published yet.'
+        : 'The update server couldn’t be reached. Please try again later.',
+      buttons: ['OK'],
+    });
   }
 }
 
