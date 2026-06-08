@@ -36,6 +36,18 @@
   </fieldset>
 
   <fieldset>
+    <legend>When to fly</legend>
+    <label class="row"><input id="activeHoursEnabled" type="checkbox" /> Only fly during working hours</label>
+    <div id="activeHoursOpts" style="margin-left:24px">
+      <label class="row">From
+        <input id="startHour" type="number" min="0" max="23" style="width:60px" /> :00 &nbsp;to&nbsp;
+        <input id="endHour" type="number" min="0" max="24" style="width:60px" /> :00
+      </label>
+      <div class="row" id="dayToggles" style="flex-wrap:wrap"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
     <legend>Which meetings</legend>
     <label class="row"><input id="skipAllDay" type="checkbox" /> Skip all-day events</label>
     <label class="row"><input id="skipDeclined" type="checkbox" /> Skip events I declined</label>

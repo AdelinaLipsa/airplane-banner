@@ -21,6 +21,12 @@ const DEFAULTS = {
   pollIntervalMinutes: 5,
   snoozeUntilEpochMs: null,
   paused: false,
+  activeHours: {
+    enabled: false,
+    startHour: 8,        // 24h local; window is [startHour, endHour)
+    endHour: 19,
+    days: [1, 2, 3, 4, 5], // 0=Sun … 6=Sat (default Mon–Fri)
+  },
   oauthClientId: '',
   oauthClientSecret: '',
 };

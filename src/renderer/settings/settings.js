@@ -15,6 +15,12 @@ async function refreshStatus() {
 async function load() {
   const c = await api.load();
   $('offsets').value = (c.reminderOffsetsMinutes || []).join(', ');
+  const ah = c.activeHours || {};
+  $('activeHoursEnabled').checked = !!ah.enabled;
+  $('startHour').value = ah.startHour != null ? ah.startHour : 8;
+  $('endHour').value = ah.endHour != null ? ah.endHour : 19;
+  renderDayToggles(ah.days || [1, 2, 3, 4, 5]);
+  updateActiveHoursOpts();
   $('skipAllDay').checked = c.filters.skipAllDay;
   $('skipDeclined').checked = c.filters.skipDeclined;
   $('primaryCalendarOnly').checked = c.filters.primaryCalendarOnly;
@@ -39,6 +45,12 @@ function collect() {
     .filter((n) => Number.isFinite(n) && n >= 0);
   return {
     reminderOffsetsMinutes: offsets.length ? offsets : [15, 5, 0],
+    activeHours: {
+      enabled: $('activeHoursEnabled').checked,
+      startHour: clampHour($('startHour').value, 8),
+      endHour: clampHour($('endHour').value, 19),
+      days: collectDays(),
+    },
     filters: {
       skipAllDay: $('skipAllDay').checked,
       skipDeclined: $('skipDeclined').checked,
@@ -58,6 +70,32 @@ function collect() {
 
 function updateDurLabel() { $('durLabel').textContent = $('flightDuration').value + 's'; }
 $('flightDuration').addEventListener('input', updateDurLabel);
+
+// --- Working hours ---------------------------------------------------------
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function renderDayToggles(activeDays) {
+  const wrap = $('dayToggles');
+  wrap.innerHTML = '';
+  DAY_LABELS.forEach((label, i) => {
+    const id = 'day' + i;
+    const span = document.createElement('label');
+    span.className = 'row';
+    span.style.margin = '4px 10px 4px 0';
+    span.innerHTML = `<input type="checkbox" id="${id}" ${activeDays.includes(i) ? 'checked' : ''}/> ${label}`;
+    wrap.appendChild(span);
+  });
+}
+function collectDays() {
+  const days = [];
+  for (let i = 0; i < 7; i++) { const el = $('day' + i); if (el && el.checked) days.push(i); }
+  return days;
+}
+function clampHour(v, fallback) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n >= 0 && n <= 24 ? n : fallback;
+}
+function updateActiveHoursOpts() { $('activeHoursOpts').style.opacity = $('activeHoursEnabled').checked ? '1' : '0.45'; }
+$('activeHoursEnabled').addEventListener('change', updateActiveHoursOpts);
 
 // --- Sound choices ---------------------------------------------------------
 // Populate the chime dropdown from the shared module so it never drifts.

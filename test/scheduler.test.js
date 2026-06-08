@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { computeReminders, reminderKey, isSuppressed, createScheduler } = require('../src/main/scheduler');
+const { computeReminders, reminderKey, isSuppressed, isWithinActiveHours, createScheduler } = require('../src/main/scheduler');
 
 const MIN = 60000;
 
@@ -66,4 +66,47 @@ test('isSuppressed false when snooze has passed', () => {
 
 test('isSuppressed false when not paused and no snooze', () => {
   assert.strictEqual(isSuppressed(1000, { paused: false, snoozeUntilEpochMs: null }), false);
+});
+
+// --- Working / quiet hours -------------------------------------------------
+const WEEKDAYS_8_19 = { enabled: true, startHour: 8, endHour: 19, days: [1, 2, 3, 4, 5] };
+// 2026-06-08 is a Monday; 2026-06-07 is a Sunday (local time).
+function at(y, mo, d, h, mi = 0) { return new Date(y, mo, d, h, mi, 0, 0); }
+
+test('isWithinActiveHours: disabled config is always within', () => {
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 7, 3), { enabled: false, startHour: 8, endHour: 19, days: [1] }), true);
+});
+
+test('isWithinActiveHours: weekday inside window is within', () => {
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 10), WEEKDAYS_8_19), true);
+});
+
+test('isWithinActiveHours: before start hour is outside', () => {
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 7, 59), WEEKDAYS_8_19), false);
+});
+
+test('isWithinActiveHours: endHour is exclusive', () => {
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 19, 0), WEEKDAYS_8_19), false);
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 18, 59), WEEKDAYS_8_19), true);
+});
+
+test('isWithinActiveHours: excluded day (Sunday) is outside even mid-window', () => {
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 7, 12), WEEKDAYS_8_19), false);
+});
+
+test('isWithinActiveHours: window wrapping midnight (22→6)', () => {
+  const night = { enabled: true, startHour: 22, endHour: 6, days: [0, 1, 2, 3, 4, 5, 6] };
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 23), night), true);
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 5), night), true);
+  assert.strictEqual(isWithinActiveHours(at(2026, 5, 8, 12), night), false);
+});
+
+test('isSuppressed true when outside active hours', () => {
+  const ts = at(2026, 5, 8, 22).getTime(); // Monday 10pm
+  assert.strictEqual(isSuppressed(ts, { paused: false, snoozeUntilEpochMs: null, activeHours: WEEKDAYS_8_19 }), true);
+});
+
+test('isSuppressed false when inside active hours', () => {
+  const ts = at(2026, 5, 8, 10).getTime(); // Monday 10am
+  assert.strictEqual(isSuppressed(ts, { paused: false, snoozeUntilEpochMs: null, activeHours: WEEKDAYS_8_19 }), false);
 });

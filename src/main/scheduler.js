@@ -19,13 +19,26 @@ function reminderKey(r) {
   return `${r.eventId}:${r.offset}`;
 }
 
-function isSuppressed(now, { paused, snoozeUntilEpochMs }) {
+// True if `date` (local time) falls inside the configured working hours. A
+// window where endHour <= startHour is treated as wrapping past midnight (e.g.
+// 22→6). Disabled config is always "within" (never restricts).
+function isWithinActiveHours(date, activeHours) {
+  if (!activeHours || !activeHours.enabled) return true;
+  const { startHour = 0, endHour = 24, days } = activeHours;
+  if (Array.isArray(days) && days.length && !days.includes(date.getDay())) return false;
+  const hour = date.getHours() + date.getMinutes() / 60;
+  if (startHour <= endHour) return hour >= startHour && hour < endHour;
+  return hour >= startHour || hour < endHour; // wraps midnight
+}
+
+function isSuppressed(now, { paused, snoozeUntilEpochMs, activeHours } = {}) {
   if (paused) return true;
   if (snoozeUntilEpochMs && snoozeUntilEpochMs > now) return true;
+  if (activeHours && activeHours.enabled && !isWithinActiveHours(new Date(now), activeHours)) return true;
   return false;
 }
 
-module.exports = { computeReminders, reminderKey, isSuppressed, MIN };
+module.exports = { computeReminders, reminderKey, isSuppressed, isWithinActiveHours, MIN };
 
 // --- Live scheduler -------------------------------------------------------
 

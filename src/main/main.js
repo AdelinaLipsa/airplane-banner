@@ -20,6 +20,7 @@ const scheduler = createScheduler({
     offsetsMinutes: settings.get('reminderOffsetsMinutes'),
     paused: settings.get('paused'),
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
+    activeHours: settings.get('activeHours'),
   }),
   onFly: (payload) => flyBanner({
     ...payload,
