@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="0.55" stop-color="#4338ca"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+
+  <!-- rounded background (macOS squircle proportions) -->
+  <rect x="84" y="84" width="856" height="856" rx="196" fill="url(#bg)"/>
+
+  <!-- starfield -->
+  <g fill="#fde68a" opacity="0.75">
+    <circle cx="250" cy="230" r="8"/>
+    <circle cx="430" cy="180" r="5"/>
+    <circle cx="800" cy="240" r="7"/>
+    <circle cx="690" cy="800" r="6"/>
+    <circle cx="300" cy="820" r="5"/>
+    <circle cx="820" cy="760" r="5"/>
+  </g>
+
+  <!-- whole plane+banner assembly, tilted as one connected unit -->
+  <g transform="rotate(-9 512 512)">
+    <!-- banner: pink hard shadow + gold ribbon + indigo "text" lines -->
+    <rect x="200" y="448" width="370" height="156" rx="18" fill="#f43f5e"/>
+    <rect x="190" y="434" width="370" height="156" rx="18" fill="#facc15" stroke="#1e1b4b" stroke-width="11"/>
+    <rect x="230" y="476" width="270" height="24" rx="12" fill="#1e1b4b"/>
+    <rect x="230" y="524" width="196" height="24" rx="12" fill="#1e1b4b"/>
+
+    <!-- tow lines to the plane -->
+    <g stroke="#1e1b4b" stroke-width="9" stroke-linecap="round">
+      <line x1="560" y1="486" x2="648" y2="492"/>
+      <line x1="560" y1="540" x2="648" y2="528"/>
+    </g>
+
+    <!-- airplane (side view, nose to the right) -->
+    <path d="M648 532 L742 576 L786 554 L702 516 Z" fill="#c7d2fe"/>
+    <ellipse cx="724" cy="512" rx="138" ry="46" fill="#f8fafc"/>
+    <path d="M856 490 q38 22 0 44 q-20 -22 0 -44 Z" fill="#e2e8f0"/>
+    <path d="M600 486 L574 426 L646 490 Z" fill="#f43f5e"/>
+    <path d="M690 500 L762 460 L802 476 L722 518 Z" fill="#e2e8f0"/>
+    <circle cx="792" cy="506" r="15" fill="#1e1b4b"/>
+    <circle cx="752" cy="510" r="13" fill="#1e1b4b"/>
+    <circle cx="862" cy="512" r="12" fill="#1e1b4b"/>
+  </g>
+</svg>
