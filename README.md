@@ -4,7 +4,7 @@ A background macOS/Windows app that flies an airplane towing a banner across you
 screen before each Google Calendar meeting — e.g. **"10 MIN → STANDUP WITH DESIGN"** —
 so you actually stop forgetting your meetings. Runs locally; nothing is published.
 
-🌐 **[Landing page & demo](https://AdelinaLipsa.github.io/airplane-banner/)**
+![Airplane Banner flying a "10 MIN → STANDUP" banner across the screen](docs/demo.gif)
 
 ## Install
 
