@@ -12,11 +12,15 @@ function createTray({ onTestFlight, onOpenSettings, onQuit, onSnooze, onTogglePa
   tray.setToolTip('Airplane Banner');
 
   let statusLine = 'Starting…';
+  let nextStart = null; // epoch ms of the next meeting, or null
 
   function build() {
     const paused = settings.get('paused');
     const snoozeUntil = settings.get('snoozeUntilEpochMs');
     const snoozed = snoozeUntil && snoozeUntil > Date.now();
+    const untilNextMeeting = (nextStart && nextStart > Date.now())
+      ? [{ label: 'Until next meeting starts', click: () => onSnooze(nextStart) }]
+      : [];
     tray.setContextMenu(Menu.buildFromTemplate([
       { label: statusLine, enabled: false },
       { type: 'separator' },
@@ -24,9 +28,11 @@ function createTray({ onTestFlight, onOpenSettings, onQuit, onSnooze, onTogglePa
       {
         label: 'Snooze',
         submenu: [
+          { label: 'For 15 minutes', click: () => onSnooze(Date.now() + 15 * MIN) },
           { label: 'For 1 hour', click: () => onSnooze(Date.now() + 60 * MIN) },
+          ...untilNextMeeting,
           { label: 'Until tomorrow', click: () => onSnooze(nextMorning()) },
-          ...(snoozed ? [{ label: 'Cancel snooze', click: () => onSnooze(null) }] : []),
+          ...(snoozed ? [{ type: 'separator' }, { label: 'Cancel snooze', click: () => onSnooze(null) }] : []),
         ],
       },
       { label: paused ? 'Resume' : 'Pause', click: onTogglePause },
@@ -46,6 +52,7 @@ function createTray({ onTestFlight, onOpenSettings, onQuit, onSnooze, onTogglePa
   build();
   return {
     setStatus(line) { statusLine = line; build(); },
+    setNextStart(ts) { nextStart = ts; },
     refresh: build,
   };
 }

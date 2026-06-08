@@ -82,7 +82,7 @@ async function poll() {
       .filter((e) => Number.isFinite(e.start))
       .sort((a, b) => a.start - b.start);
     scheduler.update(events);
-    if (tray) tray.setStatus(nextMeetingLine(events));
+    if (tray) { tray.setNextStart(events.length ? events[0].start : null); tray.setStatus(nextMeetingLine(events)); }
     scheduleNextPoll(events);
   } catch (err) {
     if (tray) tray.setStatus('⚠ Calendar unavailable');
