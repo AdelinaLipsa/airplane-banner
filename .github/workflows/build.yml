@@ -10,7 +10,25 @@ permissions:
   contents: write   # needed to publish GitHub Releases on tag builds
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      # Boot the real app headlessly (Xvfb) to catch startup/wiring crashes.
+      - name: Electron smoke test
+        env:
+          SMOKE_TEST: '1'
+        run: xvfb-run -a npx electron . --no-sandbox
+
   build:
+    needs: quality
     strategy:
       fail-fast: false
       matrix:

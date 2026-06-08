@@ -14,7 +14,7 @@
 
 let local = {};
 try {
-  // eslint-disable-next-line global-require
+   
   local = require('./oauth-credentials.local');
 } catch {
   // No local credentials file — sign-in stays disabled until one is added.

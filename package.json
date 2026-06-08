@@ -6,6 +6,8 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
+    "lint": "eslint .",
+    "smoke": "electron .",
     "dist": "electron-builder",
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win"
@@ -41,8 +43,11 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "electron": "^31.0.0",
-    "electron-builder": "^26.15.0"
+    "electron-builder": "^26.15.0",
+    "eslint": "^10.4.1",
+    "globals": "^17.6.0"
   },
   "dependencies": {
     "electron-log": "^5.4.4",

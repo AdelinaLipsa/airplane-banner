@@ -172,6 +172,10 @@ app.whenReady().then(() => {
   // Background auto-update; reflect download/ready state in the tray status.
   updater.start((line) => { if (line && tray) tray.setStatus(line); });
   powerMonitor.on('resume', () => poll());
+
+  // CI smoke test: having reached this point, the app booted (tray, settings,
+  // scheduler, updater) without throwing — exit cleanly so the run can pass.
+  if (process.env.SMOKE_TEST) setTimeout(() => app.exit(0), 1200);
 });
 
 app.on('window-all-closed', () => { /* background app: stay alive */ });
