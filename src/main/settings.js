@@ -16,6 +16,8 @@ const DEFAULTS = {
   soundName: 'fanfare',
   soundVolume: 0.2,
   flightDurationSeconds: 12,
+  suppressInFullscreen: true,
+  suppressInDnd: true,
   clickableBanner: false,
   launchAtLogin: true,
   pollIntervalMinutes: 5,

@@ -4,6 +4,7 @@ const { createTray } = require('./tray');
 const { flyBanner } = require('./windows/overlay-window');
 const { createScheduler } = require('./scheduler');
 const { openSettingsWindow } = require('./windows/settings-window');
+const presence = require('./presence');
 const auth = require('./calendar/auth');
 const { fetchUpcomingEvents } = require('./calendar/client');
 const { normalizeEvents } = require('./calendar/normalize');
@@ -22,16 +23,30 @@ const scheduler = createScheduler({
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
     activeHours: settings.get('activeHours'),
   }),
-  onFly: (payload) => flyBanner({
-    ...payload,
-    showTitle: settings.get('showTitle'),
-    theme: settings.get('theme'),
-    sound: settings.get('sound'),
-    soundName: settings.get('soundName'),
-    soundVolume: settings.get('soundVolume'),
-    durationSeconds: settings.get('flightDurationSeconds'),
-    clickable: settings.get('clickableBanner'),
-  }),
+  onFly: async (payload) => {
+    // "Don't embarrass me": skip the flight entirely while presenting fullscreen
+    // or with a Focus/DND active. Manual Test flights (payload.test) bypass this.
+    if (!payload.test) {
+      const prefs = {
+        suppressInFullscreen: settings.get('suppressInFullscreen'),
+        suppressInDnd: settings.get('suppressInDnd'),
+      };
+      if (prefs.suppressInFullscreen || prefs.suppressInDnd) {
+        const states = await presence.detectPresence();
+        if (presence.shouldSuppressForPresence(states, prefs)) return;
+      }
+    }
+    flyBanner({
+      ...payload,
+      showTitle: settings.get('showTitle'),
+      theme: settings.get('theme'),
+      sound: settings.get('sound'),
+      soundName: settings.get('soundName'),
+      soundVolume: settings.get('soundVolume'),
+      durationSeconds: settings.get('flightDurationSeconds'),
+      clickable: settings.get('clickableBanner'),
+    });
+  },
   loadFired: () => settings.getFired(),
   saveFired: (keys) => settings.addFired(keys),
 });

@@ -81,9 +81,10 @@ function createScheduler({ getState, onFly, loadFired, saveFired }) {
       const reminders = computeReminders(events, offsetsMinutes, Date.now());
       for (const r of reminders) arm(r);
     },
-    // Fire a sample banner immediately (Test flight).
+    // Fire a sample banner immediately (Test flight). Marked test:true so it
+    // always shows, bypassing presence (fullscreen/DND) suppression.
     testFly() {
-      onFly({ minutes: 10, title: 'Standup with Design' });
+      onFly({ minutes: 10, title: 'Standup with Design', test: true });
     },
     // Cancel everything (e.g., on sign-out).
     clear() {

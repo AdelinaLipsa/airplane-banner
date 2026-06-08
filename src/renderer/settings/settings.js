@@ -21,6 +21,8 @@ async function load() {
   $('endHour').value = ah.endHour != null ? ah.endHour : 19;
   renderDayToggles(ah.days || [1, 2, 3, 4, 5]);
   updateActiveHoursOpts();
+  $('suppressInFullscreen').checked = c.suppressInFullscreen !== false;
+  $('suppressInDnd').checked = c.suppressInDnd !== false;
   $('skipAllDay').checked = c.filters.skipAllDay;
   $('skipDeclined').checked = c.filters.skipDeclined;
   $('primaryCalendarOnly').checked = c.filters.primaryCalendarOnly;
@@ -51,6 +53,8 @@ function collect() {
       endHour: clampHour($('endHour').value, 19),
       days: collectDays(),
     },
+    suppressInFullscreen: $('suppressInFullscreen').checked,
+    suppressInDnd: $('suppressInDnd').checked,
     filters: {
       skipAllDay: $('skipAllDay').checked,
       skipDeclined: $('skipDeclined').checked,
