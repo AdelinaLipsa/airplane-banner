@@ -1,0 +1,53 @@
+name: Build installers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            build: npx electron-builder --mac --arm64 --x64
+          - os: windows-latest
+            build: npx electron-builder --win --x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+      # The real OAuth client lives in repo secrets (Settings → Secrets and
+      # variables → Actions): OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET. Without
+      # them the build still succeeds, but sign-in is disabled in that build.
+      - name: Write OAuth credentials (if provided)
+        shell: bash
+        env:
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+        run: |
+          if [ -n "$OAUTH_CLIENT_ID" ]; then
+            printf "module.exports = { clientId: '%s', clientSecret: '%s' };\n" \
+              "$OAUTH_CLIENT_ID" "$OAUTH_CLIENT_SECRET" > src/main/oauth-credentials.local.js
+            echo "Wrote oauth-credentials.local.js"
+          else
+            echo "No OAUTH_CLIENT_ID secret set — building without embedded sign-in."
+          fi
+
+      - run: ${{ matrix.build }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+          if-no-files-found: error
