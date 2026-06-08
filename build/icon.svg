@@ -34,14 +34,11 @@
       <line x1="560" y1="540" x2="648" y2="528"/>
     </g>
 
-    <!-- airplane (side view, nose to the right) -->
-    <path d="M648 532 L742 576 L786 554 L702 516 Z" fill="#c7d2fe"/>
-    <ellipse cx="724" cy="512" rx="138" ry="46" fill="#f8fafc"/>
-    <path d="M856 490 q38 22 0 44 q-20 -22 0 -44 Z" fill="#e2e8f0"/>
-    <path d="M600 486 L574 426 L646 490 Z" fill="#f43f5e"/>
-    <path d="M690 500 L762 460 L802 476 L722 518 Z" fill="#e2e8f0"/>
-    <circle cx="792" cy="506" r="15" fill="#1e1b4b"/>
-    <circle cx="752" cy="510" r="13" fill="#1e1b4b"/>
-    <circle cx="862" cy="512" r="12" fill="#1e1b4b"/>
+    <!-- airplane (bold top-view silhouette, nose to the right) -->
+    <path d="M912 512 L772 488 L726 488 L628 404 L690 480 L658 480 L600 446 L644 488 L606 488 L606 536 L644 536 L600 578 L658 544 L690 544 L628 620 L726 536 L772 536 Z"
+          fill="#f8fafc" stroke="#1e1b4b" stroke-width="6" stroke-linejoin="round"/>
+    <!-- pink fuselage stripe + cockpit -->
+    <rect x="624" y="505" width="250" height="14" rx="7" fill="#f43f5e"/>
+    <circle cx="858" cy="512" r="11" fill="#1e1b4b"/>
   </g>
 </svg>
