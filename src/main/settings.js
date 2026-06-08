@@ -46,4 +46,29 @@ function loadTokens() {
 }
 function clearTokens() { store.delete('tokensEnc'); store.delete('tokensPlain'); }
 
-module.exports = { DEFAULTS, getAll, get, set, saveTokens, loadTokens, clearTokens };
+// --- Fired-reminder persistence (so restarts don't re-fly seen reminders) ---
+const FIRED_TTL_MS = 24 * 60 * 60 * 1000; // forget entries older than a day
+
+// Returns the still-relevant fired reminder keys, pruning anything stale.
+function getFired() {
+  const map = store.get('firedReminders') || {};
+  const cutoff = Date.now() - FIRED_TTL_MS;
+  const kept = {};
+  for (const [key, firedAt] of Object.entries(map)) {
+    if (firedAt > cutoff) kept[key] = firedAt;
+  }
+  store.set('firedReminders', kept);
+  return Object.keys(kept);
+}
+function addFired(keys) {
+  const map = store.get('firedReminders') || {};
+  const now = Date.now();
+  for (const key of keys) map[key] = now;
+  store.set('firedReminders', map);
+}
+function clearFired() { store.set('firedReminders', {}); }
+
+module.exports = {
+  DEFAULTS, getAll, get, set, saveTokens, loadTokens, clearTokens,
+  getFired, addFired, clearFired,
+};

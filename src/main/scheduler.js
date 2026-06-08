@@ -8,7 +8,7 @@ function computeReminders(events, offsetsMinutes, now) {
     for (const offset of offsetsMinutes) {
       const fireAt = event.start - offset * MIN;
       if (fireAt > now) {
-        out.push({ eventId: event.id, offset, fireAt, minutes: offset, title: event.title });
+        out.push({ eventId: event.id, offset, fireAt, minutes: offset, title: event.title, startAt: event.start });
       }
     }
   }
@@ -33,11 +33,13 @@ module.exports = { computeReminders, reminderKey, isSuppressed, MIN };
 // and re-arm if the real fire time is further out.
 const MAX_DELAY = 2 ** 31 - 1;
 
-function createScheduler({ getState, onFly }) {
+function createScheduler({ getState, onFly, loadFired, saveFired }) {
   // getState() -> { offsetsMinutes, paused, snoozeUntilEpochMs }
   // onFly({ minutes, title }) -> show the banner
-  const timers = new Map();   // key -> Timeout
-  const fired = new Set();    // key -> already shown
+  // loadFired() -> string[] of reminder keys already shown (persisted)
+  // saveFired(keys) -> persist newly-fired reminder keys
+  const timers = new Map();                                  // key -> Timeout
+  const fired = new Set(loadFired ? loadFired() : []);       // key -> already shown
 
   function arm(reminder) {
     const key = reminderKey(reminder);
@@ -47,9 +49,14 @@ function createScheduler({ getState, onFly }) {
       timers.delete(key);
       if (reminder.fireAt - Date.now() > 1000) { arm(reminder); return; } // re-arm long timers
       fired.add(key);
+      if (saveFired) saveFired([key]);
       const state = getState();
       if (isSuppressed(Date.now(), state)) return; // paused/snoozed -> skip, do not requeue
-      onFly({ minutes: reminder.minutes, title: reminder.title });
+      // Show the *live* minutes-to-start (handles timers that fired late, e.g.
+      // after the laptop woke from sleep), not the originally-configured offset.
+      const startAt = reminder.startAt != null ? reminder.startAt : reminder.fireAt + reminder.offset * MIN;
+      const liveMinutes = Math.max(0, Math.round((startAt - Date.now()) / MIN));
+      onFly({ minutes: liveMinutes, title: reminder.title });
     }, Math.max(delay, 0));
     timers.set(key, t);
   }

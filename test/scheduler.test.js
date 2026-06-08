@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { computeReminders, reminderKey, isSuppressed } = require('../src/main/scheduler');
+const { computeReminders, reminderKey, isSuppressed, createScheduler } = require('../src/main/scheduler');
 
 const MIN = 60000;
 
@@ -34,6 +34,22 @@ test('drops reminders whose fire time is already past', () => {
 
 test('reminderKey is stable per event+offset', () => {
   assert.strictEqual(reminderKey({ eventId: 'a', offset: 5 }), 'a:5');
+});
+
+test('computeReminders includes the event start time', () => {
+  const now = 1000000;
+  const events = [ev('a', 20)];
+  const out = computeReminders(events, [15], now);
+  assert.strictEqual(out[0].startAt, events[0].start);
+});
+
+test('createScheduler seeds its fired set from loadFired (no re-fire after restart)', () => {
+  const s = createScheduler({
+    getState: () => ({ offsetsMinutes: [5], paused: false, snoozeUntilEpochMs: null }),
+    onFly: () => {},
+    loadFired: () => ['a:5'],
+  });
+  assert.strictEqual(s._debug.fired.has('a:5'), true);
 });
 
 test('isSuppressed true when paused', () => {

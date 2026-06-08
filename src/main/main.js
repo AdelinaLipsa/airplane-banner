@@ -22,6 +22,8 @@ const scheduler = createScheduler({
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
   }),
   onFly: (payload) => flyBanner({ ...payload, showTitle: settings.get('showTitle') }),
+  loadFired: () => settings.getFired(),
+  saveFired: (keys) => settings.addFired(keys),
 });
 
 function openSettings() { openSettingsWindow(); }
@@ -39,7 +41,7 @@ ipcMain.handle('settings:save', (_e, patch) => {
   return settings.getAll();
 });
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });
-ipcMain.handle('auth:signOut', () => { auth.signOut(); scheduler.clear(); return true; });
+ipcMain.handle('auth:signOut', () => { auth.signOut(); scheduler.clear(); settings.clearFired(); return true; });
 ipcMain.handle('auth:status', () => ({
   signedIn: auth.hasValidAuth(),
   hasCredentials: auth.hasCredentials(),
