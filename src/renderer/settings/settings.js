@@ -20,6 +20,8 @@ async function load() {
   $('primaryCalendarOnly').checked = c.filters.primaryCalendarOnly;
   $('requireAttendeesOrLink').checked = c.filters.requireAttendeesOrLink;
   $('showTitle').checked = c.showTitle;
+  $('theme').value = c.theme || 'retro';
+  $('sound').checked = !!c.sound;
   $('launchAtLogin').checked = c.launchAtLogin;
   await refreshStatus();
 }
@@ -37,6 +39,8 @@ function collect() {
       requireAttendeesOrLink: $('requireAttendeesOrLink').checked,
     },
     showTitle: $('showTitle').checked,
+    theme: $('theme').value,
+    sound: $('sound').checked,
     launchAtLogin: $('launchAtLogin').checked,
   };
 }

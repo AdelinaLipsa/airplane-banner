@@ -11,6 +11,8 @@ const DEFAULTS = {
     requireAttendeesOrLink: true,
   },
   showTitle: true,
+  theme: 'retro',
+  sound: false,
   launchAtLogin: true,
   pollIntervalMinutes: 5,
   snoozeUntilEpochMs: null,

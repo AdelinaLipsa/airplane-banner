@@ -1,5 +1,29 @@
 const flight = document.getElementById('flight');
 const banner = document.getElementById('banner');
+const aircraft = document.getElementById('aircraft');
+
+// Palettes selectable in Settings. `fabric`/`ink` color the canvas banner;
+// `pop` is the hard shadow; `planeFilter` hue-shifts the raster plane sprite.
+const THEMES = {
+  retro:  { fabric: '#facc15', ink: '#1e1b4b', pop: '#f43f5e',
+            planeFilter: 'grayscale(1) sepia(1) hue-rotate(196deg) saturate(5) brightness(0.82) contrast(1.05)' },
+  aurora: { fabric: '#0b1020', ink: '#5eead4', pop: '#a78bfa',
+            planeFilter: 'grayscale(1) sepia(1) hue-rotate(120deg) saturate(4) brightness(0.95)' },
+  sunset: { fabric: '#fb7185', ink: '#ffffff', pop: '#f97316',
+            planeFilter: 'grayscale(1) sepia(1) saturate(6) hue-rotate(-25deg) brightness(1.0)' },
+  mono:   { fabric: '#0a0a0a', ink: '#fafafa', pop: '#9ca3af',
+            planeFilter: 'grayscale(1) contrast(1.2) brightness(0.6)' },
+};
+
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.retro;
+  const root = document.documentElement.style;
+  root.setProperty('--ink', t.ink);
+  root.setProperty('--gold', t.fabric);
+  root.setProperty('--pop', t.pop);
+  if (aircraft) aircraft.style.filter = `${t.planeFilter} drop-shadow(5px 5px 0 ${t.pop})`;
+  return t;
+}
 
 function formatText(minutes, title, showTitle = true) {
   if (!showTitle) {
@@ -10,9 +34,8 @@ function formatText(minutes, title, showTitle = true) {
 }
 
 // Render the banner text to a canvas, then slice it into vertical strips that
-// each wave independently — the CodePen rippling-fabric technique, recolored
-// to the Retro Arcade palette (yellow fabric, indigo text).
-function buildBanner(text) {
+// each wave independently — the CodePen rippling-fabric technique.
+function buildBanner(text, theme) {
   banner.innerHTML = '';
   const pad = 36;
   const font = '800 44px ui-monospace, Menlo, "Courier New", monospace';
@@ -25,9 +48,9 @@ function buildBanner(text) {
   // Resizing the canvas resets the context state — reapply font/baseline.
   ctx.font = font;
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#facc15';
+  ctx.fillStyle = theme.fabric;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#1e1b4b';
+  ctx.fillStyle = theme.ink;
   ctx.fillText(text, pad, canvas.height / 2 + 2);
 
   const url = canvas.toDataURL();
@@ -48,8 +71,32 @@ function buildBanner(text) {
   img.src = url;
 }
 
+// A short two-note "fanfare" via Web Audio — no asset needed.
+function playChime() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ac = new Ctx();
+    const notes = [660, 880];
+    notes.forEach((freq, i) => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const t0 = ac.currentTime + i * 0.14;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.25);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.3);
+    });
+  } catch { /* audio unavailable — ignore */ }
+}
+
 function fly(payload) {
-  buildBanner(formatText(payload.minutes, payload.title, payload.showTitle !== false));
+  const theme = applyTheme(payload.theme);
+  buildBanner(formatText(payload.minutes, payload.title, payload.showTitle !== false), theme);
+  if (payload.sound) playChime();
   flight.classList.remove('flying');
   void flight.offsetWidth; // restart the CSS animation
   flight.classList.add('flying');

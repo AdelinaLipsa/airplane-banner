@@ -21,7 +21,12 @@ const scheduler = createScheduler({
     paused: settings.get('paused'),
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
   }),
-  onFly: (payload) => flyBanner({ ...payload, showTitle: settings.get('showTitle') }),
+  onFly: (payload) => flyBanner({
+    ...payload,
+    showTitle: settings.get('showTitle'),
+    theme: settings.get('theme'),
+    sound: settings.get('sound'),
+  }),
   loadFired: () => settings.getFired(),
   saveFired: (keys) => settings.addFired(keys),
 });
