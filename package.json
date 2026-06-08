@@ -16,6 +16,7 @@
   "build": {
     "appId": "com.adelina.airplanebanner",
     "productName": "Airplane Banner",
+    "artifactName": "Airplane-Banner-${version}-${arch}.${ext}",
     "files": [
       "src/**/*",
       "assets/**/*",

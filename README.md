@@ -4,7 +4,21 @@ A background macOS/Windows app that flies an airplane towing a banner across you
 screen before each Google Calendar meeting — e.g. **"10 MIN → STANDUP WITH DESIGN"** —
 so you actually stop forgetting your meetings. Runs locally; nothing is published.
 
-## Install & run
+🌐 **[Landing page & demo](https://AdelinaLipsa.github.io/airplane-banner/)**
+
+## Install
+
+**Download:** grab the latest `.dmg` (macOS) or `.exe` (Windows) from
+[Releases](https://github.com/AdelinaLipsa/airplane-banner/releases/latest). The app
+keeps itself up to date automatically.
+
+**Homebrew (macOS):**
+
+```bash
+brew install --cask AdelinaLipsa/tap/airplane-banner
+```
+
+**From source:**
 
 ```bash
 npm install
@@ -49,18 +63,29 @@ module.exports = { clientId: '…apps.googleusercontent.com', clientSecret: 'GOC
 
 ## Configuration (tray → Settings…)
 
-- **Reminders:** minutes before each meeting to fly (default `15, 5, 0`).
-- **Which meetings:** skip all-day, skip declined, primary calendar only, require
-  attendees/video link, show meeting title.
+- **Accounts:** connect multiple Google accounts and pick exactly which of each
+  account's calendars to watch.
+- **Reminders:** minutes before each meeting to fly (default `15, 5, 0`). Respects a
+  meeting's own reminder times when it sets them; add `[no-fly]` to a title to skip it.
+- **When to fly:** restrict to working hours/days, and stay grounded while another app
+  is fullscreen or a Focus / Do Not Disturb is on.
+- **Which meetings:** skip all-day, skip declined, require attendees/video link, show title.
+- **Appearance:** four banner themes (with a live preview), flight speed, and a flight
+  chime (pick the sound + volume).
 - **Launch at login.**
 
-Tray menu also has **Test flight**, **Snooze** (1 hour / until tomorrow), and **Pause**.
+Tray menu also has **Today**'s remaining meetings, **Test flight**, **Snooze**, **Pause**,
+and **Check for updates…**.
 
 ## Development
 
 ```bash
-npm test     # runs pure-logic unit tests (normalize, filter, scheduler)
+npm test     # pure-logic unit tests (normalize, filter, scheduler, presence, accounts)
+npm run lint # eslint
 ```
+
+Releases are published by pushing a `v*` tag — CI builds the installers and publishes a
+GitHub Release that existing installs auto-update from.
 
 ## Notes / limits (v1)
 
