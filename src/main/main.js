@@ -57,9 +57,25 @@ function nextMeetingLine(events) {
   return `Next: ${title} in ${mins} min`;
 }
 
+// Poll fast (~1 min) when a meeting is imminent, otherwise at the configured
+// interval — so an event created shortly before its start isn't missed.
+function nextPollDelayMs(events) {
+  const base = settings.get('pollIntervalMinutes') * 60000;
+  if (events && events.length) {
+    const soonest = events[0].start - Date.now();
+    if (soonest < 10 * 60000) return Math.min(base, 60000);
+  }
+  return base;
+}
+
+function scheduleNextPoll(events) {
+  if (pollTimer) clearTimeout(pollTimer);
+  pollTimer = setTimeout(poll, nextPollDelayMs(events));
+}
+
 async function poll() {
   const client = auth.getOAuthClient();
-  if (!client) { if (tray) tray.setStatus('Not signed in'); return; }
+  if (!client) { if (tray) tray.setStatus('Not signed in'); scheduleNextPoll(null); return; }
   try {
     const raw = await fetchUpcomingEvents(client, { hoursAhead: 4 });
     const events = filterEvents(normalizeEvents(raw, { calendarId: 'primary' }), settings.get('filters'))
@@ -67,16 +83,17 @@ async function poll() {
       .sort((a, b) => a.start - b.start);
     scheduler.update(events);
     if (tray) tray.setStatus(nextMeetingLine(events));
+    scheduleNextPoll(events);
   } catch (err) {
     if (tray) tray.setStatus('⚠ Calendar unavailable');
     console.error('poll failed:', err.message);
+    scheduleNextPoll(null);
   }
 }
 
 function startPolling() {
-  if (pollTimer) clearInterval(pollTimer);
+  if (pollTimer) clearTimeout(pollTimer);
   poll();
-  pollTimer = setInterval(poll, settings.get('pollIntervalMinutes') * 60000);
 }
 
 app.whenReady().then(() => {
