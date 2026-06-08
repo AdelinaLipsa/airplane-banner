@@ -23,7 +23,12 @@ Banner**.) Calendar access is **read-only**.
 ## One-time Google setup (developer / whoever ships the app)
 
 The app talks to Google through a single OAuth client that ships inside it. Create
-it once and paste the values into `src/main/oauth-credentials.js`:
+it once and paste the values into `src/main/oauth-credentials.local.js` (this file
+is gitignored so the secret never reaches version control; bundled into builds):
+
+```js
+module.exports = { clientId: '…apps.googleusercontent.com', clientSecret: 'GOCSPX-…' };
+```
 
 1. Go to <https://console.cloud.google.com/> and create a project.
 2. **APIs & Services → Library** → enable **Google Calendar API**.
@@ -35,7 +40,7 @@ it once and paste the values into `src/main/oauth-credentials.js`:
      and Google review).
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID** →
    application type **Desktop app**.
-5. Copy the **Client ID** and **Client secret** into `src/main/oauth-credentials.js`.
+5. Copy the **Client ID** and **Client secret** into `src/main/oauth-credentials.local.js`.
 
 > Desktop OAuth client secrets are not confidential — they ship inside the app and
 > can be extracted. This is Google's expected model for installed desktop apps.
