@@ -30,6 +30,7 @@ async function load() {
   $('requireAttendeesOrLink').checked = c.filters.requireAttendeesOrLink;
   $('showTitle').checked = c.showTitle;
   $('theme').value = c.theme || 'retro';
+  updateThemePreview();
   $('flightDuration').value = c.flightDurationSeconds || 12;
   updateDurLabel();
   $('sound').checked = !!c.sound;
@@ -76,6 +77,15 @@ function collect() {
 
 function updateDurLabel() { $('durLabel').textContent = $('flightDuration').value + 's'; }
 $('flightDuration').addEventListener('input', updateDurLabel);
+
+// --- Live theme preview ----------------------------------------------------
+const PREVIEW_POP = { retro: '#f43f5e', aurora: '#a78bfa', sunset: '#f97316', mono: '#9ca3af' };
+function updateThemePreview() {
+  const t = $('theme').value || 'retro';
+  $('themePreview').dataset.theme = t;
+  $('themePreview').style.setProperty('--prevPop', PREVIEW_POP[t] || '#f43f5e');
+}
+$('theme').addEventListener('change', updateThemePreview);
 
 // --- Working hours ---------------------------------------------------------
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

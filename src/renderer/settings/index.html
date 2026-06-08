@@ -14,6 +14,42 @@
              padding: 8px 14px; font-weight: 700; cursor: pointer; }
     #status { font-size: 13px; color: #555; }
     .save-bar { position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
+
+    /* Live theme preview — a tiny banner+plane loops across so the four styles
+       can be compared without a Test flight. */
+    #themePreview {
+      position: relative; height: 84px; margin: 10px 0 4px; border-radius: 10px;
+      overflow: hidden; border: 1px solid #e5e7eb;
+      background: linear-gradient(135deg, #dbeafe, #fef9c3);
+    }
+    .mini-flight {
+      position: absolute; top: 50%; left: 0; display: flex; align-items: center; gap: 6px;
+      animation: miniFly 7s linear infinite;
+    }
+    @keyframes miniFly {
+      from { transform: translate(-70%, -50%); }
+      to   { transform: translate(540px, -50%); }
+    }
+    .mini-plane { height: 30px; filter: drop-shadow(3px 3px 0 var(--prevPop, #f43f5e)); }
+    .mini-banner { white-space: nowrap; font-size: 13px; font-weight: 700; padding: 7px 13px; border-radius: 6px; }
+    #themePreview[data-theme="retro"] .mini-banner {
+      background: #facc15; color: #1e1b4b; font-family: ui-monospace, Menlo, monospace; box-shadow: 3px 3px 0 #f43f5e;
+    }
+    #themePreview[data-theme="aurora"] { background: linear-gradient(135deg, #0b1020, #1f2937); }
+    #themePreview[data-theme="aurora"] .mini-banner {
+      background: rgba(255,255,255,0.08); color: #e9f6ff; border: 1px solid rgba(255,255,255,0.3);
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 0 18px rgba(94,234,212,0.55);
+    }
+    #themePreview[data-theme="sunset"] .mini-banner {
+      background: linear-gradient(90deg, #fb7185, #f97316, #a855f7); color: #fff; border-radius: 999px;
+      box-shadow: 0 8px 16px rgba(168,85,247,0.4);
+    }
+    #themePreview[data-theme="mono"] { background: #e5e7eb; }
+    #themePreview[data-theme="mono"] .mini-banner {
+      background: #0a0a0a; color: #fafafa; font-family: ui-monospace, Menlo, monospace;
+      text-transform: uppercase; letter-spacing: 1px; border-radius: 3px;
+    }
+    @media (prefers-reduced-motion: reduce) { .mini-flight { animation: none; transform: translate(20px, -50%); } }
   </style>
 </head>
 <body>
@@ -70,6 +106,12 @@
         <option value="mono">Mono Minimal — black & white</option>
       </select>
     </label>
+    <div id="themePreview" data-theme="retro">
+      <div class="mini-flight">
+        <div class="mini-banner">10 MIN → STANDUP</div>
+        <img class="mini-plane" src="../overlay/plane.png" alt="" />
+      </div>
+    </div>
     <label>Flight duration: <strong id="durLabel">12s</strong> <span style="color:#888">(slower ⟷ faster)</span>
       <input id="flightDuration" type="range" min="4" max="30" step="1" style="width:100%" />
     </label>
