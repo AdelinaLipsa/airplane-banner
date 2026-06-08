@@ -1,4 +1,4 @@
-const { BrowserWindow, screen, ipcMain } = require('electron');
+const { BrowserWindow, screen, ipcMain, shell } = require('electron');
 const path = require('path');
 
 let win = null;
@@ -36,6 +36,16 @@ function positionOnActiveDisplay(w) {
   w.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height });
 }
 
+function showFlight(w, p) {
+  // Forward mouse-move only when the banner is meant to be clickable, so the
+  // renderer can make just the banner interactive; otherwise stay click-through.
+  const forward = !!(p.clickable && p.link);
+  w.setIgnoreMouseEvents(true, { forward });
+  positionOnActiveDisplay(w);
+  w.showInactive();
+  w.webContents.send('fly', p);
+}
+
 function flyBanner(payload) {
   const w = win || build();
   if (w.webContents.isLoading()) {
@@ -45,18 +55,26 @@ function flyBanner(payload) {
       w.webContents.once('did-finish-load', () => {
         const p = pending;
         pending = null;
-        positionOnActiveDisplay(w);
-        w.showInactive();
-        w.webContents.send('fly', p);
+        showFlight(w, p);
       });
     }
     return;
   }
-  positionOnActiveDisplay(w);
-  w.showInactive();
-  w.webContents.send('fly', payload);
+  showFlight(w, payload);
 }
 
-ipcMain.on('flight-done', () => { if (win) win.hide(); });
+ipcMain.on('flight-done', () => {
+  if (win) { win.setIgnoreMouseEvents(true, { forward: true }); win.hide(); }
+});
+
+// Click-to-join (opt-in): the renderer forwards hover so only the banner is
+// interactive; everything else stays click-through.
+ipcMain.on('overlay-interactive', (_e, interactive) => {
+  if (win) win.setIgnoreMouseEvents(!interactive, { forward: true });
+});
+ipcMain.on('overlay-open-link', (_e, url) => {
+  if (typeof url === 'string' && /^https?:\/\//.test(url)) shell.openExternal(url);
+  if (win) { win.setIgnoreMouseEvents(true, { forward: true }); win.hide(); }
+});
 
 module.exports = { flyBanner };

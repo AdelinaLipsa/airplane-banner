@@ -13,6 +13,7 @@ const DEFAULTS = {
   showTitle: true,
   theme: 'retro',
   sound: false,
+  clickableBanner: false,
   launchAtLogin: true,
   pollIntervalMinutes: 5,
   snoozeUntilEpochMs: null,

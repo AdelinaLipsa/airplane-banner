@@ -93,10 +93,41 @@ function playChime() {
   } catch { /* audio unavailable — ignore */ }
 }
 
+// ── Opt-in click-to-join ────────────────────────────────────────────────────
+// The window forwards mousemove while click-through; we flip it interactive only
+// while the cursor is over the flying assembly, so clicks elsewhere pass through.
+const assembly = document.getElementById('assembly');
+let currentLink = null;
+let clickable = false;
+let interactive = false;
+
+function setInteractive(on) {
+  if (on === interactive) return;
+  interactive = on;
+  document.body.style.cursor = on ? 'pointer' : 'default';
+  if (window.overlayApi) window.overlayApi.setInteractive(on);
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!clickable || !currentLink) return;
+  const r = assembly.getBoundingClientRect();
+  const over = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  setInteractive(over);
+});
+document.addEventListener('click', () => {
+  if (clickable && currentLink && interactive && window.overlayApi) {
+    window.overlayApi.openLink(currentLink); // main opens the link and hides us
+    clickable = false;
+  }
+});
+
 function fly(payload) {
   const theme = applyTheme(payload.theme);
   buildBanner(formatText(payload.minutes, payload.title, payload.showTitle !== false), theme);
   if (payload.sound) playChime();
+  currentLink = payload.link || null;
+  clickable = !!(payload.clickable && currentLink);
+  setInteractive(false);
   flight.classList.remove('flying');
   void flight.offsetWidth; // restart the CSS animation
   flight.classList.add('flying');
@@ -105,6 +136,8 @@ function fly(payload) {
 flight.addEventListener('animationend', (e) => {
   if (e.animationName === 'flyAcross') {
     flight.classList.remove('flying');
+    clickable = false;
+    setInteractive(false);
     if (window.overlayApi) window.overlayApi.flightDone();
   }
 });

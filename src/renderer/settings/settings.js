@@ -22,6 +22,7 @@ async function load() {
   $('showTitle').checked = c.showTitle;
   $('theme').value = c.theme || 'retro';
   $('sound').checked = !!c.sound;
+  $('clickableBanner').checked = !!c.clickableBanner;
   $('launchAtLogin').checked = c.launchAtLogin;
   await refreshStatus();
 }
@@ -41,6 +42,7 @@ function collect() {
     showTitle: $('showTitle').checked,
     theme: $('theme').value,
     sound: $('sound').checked,
+    clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
   };
 }

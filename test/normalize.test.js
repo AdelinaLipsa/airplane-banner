@@ -32,6 +32,19 @@ test('detects all-day events', () => {
 test('detects conference link via hangoutLink', () => {
   const ev = normalizeEvent({ ...base, hangoutLink: 'https://meet.google.com/xyz' }, { calendarId: 'primary' });
   assert.strictEqual(ev.hasConferenceLink, true);
+  assert.strictEqual(ev.conferenceLink, 'https://meet.google.com/xyz');
+});
+
+test('extracts a zoom link from the description', () => {
+  const ev = normalizeEvent({ ...base, description: 'Join: https://zoom.us/j/123456?pwd=abc see you' }, { calendarId: 'primary' });
+  assert.strictEqual(ev.conferenceLink, 'https://zoom.us/j/123456?pwd=abc');
+  assert.strictEqual(ev.hasConferenceLink, true);
+});
+
+test('no link -> conferenceLink null', () => {
+  const ev = normalizeEvent(base, { calendarId: 'primary' });
+  assert.strictEqual(ev.conferenceLink, null);
+  assert.strictEqual(ev.hasConferenceLink, false);
 });
 
 test('hasAttendees is false when only self', () => {
