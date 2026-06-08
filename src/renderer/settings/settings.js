@@ -24,6 +24,10 @@ async function load() {
   $('flightDuration').value = c.flightDurationSeconds || 12;
   updateDurLabel();
   $('sound').checked = !!c.sound;
+  $('soundName').value = c.soundName || 'fanfare';
+  $('soundVolume').value = Math.round((c.soundVolume != null ? c.soundVolume : 0.2) * 100);
+  updateVolLabel();
+  updateSoundOpts();
   $('clickableBanner').checked = !!c.clickableBanner;
   $('launchAtLogin').checked = c.launchAtLogin;
   await refreshStatus();
@@ -45,6 +49,8 @@ function collect() {
     theme: $('theme').value,
     flightDurationSeconds: parseInt($('flightDuration').value, 10) || 12,
     sound: $('sound').checked,
+    soundName: $('soundName').value,
+    soundVolume: (parseInt($('soundVolume').value, 10) || 0) / 100,
     clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
   };
@@ -52,6 +58,27 @@ function collect() {
 
 function updateDurLabel() { $('durLabel').textContent = $('flightDuration').value + 's'; }
 $('flightDuration').addEventListener('input', updateDurLabel);
+
+// --- Sound choices ---------------------------------------------------------
+// Populate the chime dropdown from the shared module so it never drifts.
+(function populateChimes() {
+  const chimes = (window.AirplaneChimes && window.AirplaneChimes.CHIMES) || {};
+  for (const [name, recipe] of Object.entries(chimes)) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = recipe.label || name;
+    $('soundName').appendChild(opt);
+  }
+})();
+function updateVolLabel() { $('volLabel').textContent = $('soundVolume').value + '%'; }
+function updateSoundOpts() { $('soundOpts').style.opacity = $('sound').checked ? '1' : '0.45'; }
+$('soundVolume').addEventListener('input', updateVolLabel);
+$('sound').addEventListener('change', updateSoundOpts);
+$('soundPreview').addEventListener('click', () => {
+  if (window.AirplaneChimes) {
+    window.AirplaneChimes.playChime($('soundName').value, (parseInt($('soundVolume').value, 10) || 0) / 100);
+  }
+});
 
 $('save').addEventListener('click', async () => {
   await api.save(collect());

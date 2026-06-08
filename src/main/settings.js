@@ -13,6 +13,8 @@ const DEFAULTS = {
   showTitle: true,
   theme: 'retro',
   sound: false,
+  soundName: 'fanfare',
+  soundVolume: 0.2,
   flightDurationSeconds: 12,
   clickableBanner: false,
   launchAtLogin: true,

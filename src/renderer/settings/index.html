@@ -58,6 +58,15 @@
       <input id="flightDuration" type="range" min="4" max="30" step="1" style="width:100%" />
     </label>
     <label class="row"><input id="sound" type="checkbox" /> Play a sound when the plane flies</label>
+    <div id="soundOpts" style="margin-left:24px">
+      <label class="row">Chime
+        <select id="soundName"></select>
+        <button id="soundPreview" type="button" style="padding:4px 10px">▶ Preview</button>
+      </label>
+      <label>Volume: <strong id="volLabel">20%</strong>
+        <input id="soundVolume" type="range" min="0" max="100" step="5" style="width:100%" />
+      </label>
+    </div>
     <label class="row"><input id="clickableBanner" type="checkbox" /> Click the banner to join the meeting (experimental)</label>
   </fieldset>
 
@@ -68,6 +77,7 @@
 
   <div class="save-bar"><button id="save">Save</button> <span id="saved"></span></div>
 
+  <script src="../shared/chimes.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

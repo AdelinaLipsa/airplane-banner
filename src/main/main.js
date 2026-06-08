@@ -26,6 +26,8 @@ const scheduler = createScheduler({
     showTitle: settings.get('showTitle'),
     theme: settings.get('theme'),
     sound: settings.get('sound'),
+    soundName: settings.get('soundName'),
+    soundVolume: settings.get('soundVolume'),
     durationSeconds: settings.get('flightDurationSeconds'),
     clickable: settings.get('clickableBanner'),
   }),

@@ -82,26 +82,10 @@ function buildFlatBanner(text) {
   banner.appendChild(el);
 }
 
-// A short two-note "fanfare" via Web Audio — no asset needed.
-function playChime() {
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ac = new Ctx();
-    const notes = [660, 880];
-    notes.forEach((freq, i) => {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      const t0 = ac.currentTime + i * 0.14;
-      gain.gain.setValueAtTime(0.0001, t0);
-      gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.25);
-      osc.connect(gain).connect(ac.destination);
-      osc.start(t0);
-      osc.stop(t0 + 0.3);
-    });
-  } catch { /* audio unavailable — ignore */ }
+// Flight chime: synthesized via the shared AirplaneChimes module (loaded before
+// this script). The chosen sound + volume come from Settings via the payload.
+function playChime(name, volume) {
+  if (window.AirplaneChimes) window.AirplaneChimes.playChime(name, volume);
 }
 
 // ── Opt-in click-to-join ────────────────────────────────────────────────────
@@ -139,7 +123,7 @@ function fly(payload) {
   const text = formatText(payload.minutes, payload.title, payload.showTitle !== false);
   if (themeName === 'retro') buildFabricBanner(text, theme);
   else buildFlatBanner(text);
-  if (payload.sound) playChime();
+  if (payload.sound) playChime(payload.soundName, payload.soundVolume);
   currentLink = payload.link || null;
   clickable = !!(payload.clickable && currentLink);
   setInteractive(false);
