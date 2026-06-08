@@ -28,6 +28,14 @@ function build() {
   return win;
 }
 
+// Move the overlay to whichever display the cursor is currently on, so the
+// banner flies across the screen the user is actually looking at.
+function positionOnActiveDisplay(w) {
+  const point = screen.getCursorScreenPoint();
+  const b = screen.getDisplayNearestPoint(point).bounds;
+  w.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height });
+}
+
 function flyBanner(payload) {
   const w = win || build();
   if (w.webContents.isLoading()) {
@@ -37,12 +45,14 @@ function flyBanner(payload) {
       w.webContents.once('did-finish-load', () => {
         const p = pending;
         pending = null;
+        positionOnActiveDisplay(w);
         w.showInactive();
         w.webContents.send('fly', p);
       });
     }
     return;
   }
+  positionOnActiveDisplay(w);
   w.showInactive();
   w.webContents.send('fly', payload);
 }
