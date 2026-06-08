@@ -100,6 +100,14 @@ app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide();
   tray = createTray({
     onTestFlight: () => scheduler.testFly(),
+    onTestSchedule: () => {
+      // Inject a fake meeting so the smallest configured reminder fires in ~60s,
+      // exercising the real schedule → timer → overlay path.
+      const offsets = settings.get('reminderOffsetsMinutes') || [0];
+      const minO = offsets.length ? Math.min(...offsets) : 0;
+      const start = Date.now() + 60000 + minO * 60000;
+      scheduler.update([{ id: '__test:' + Date.now(), title: 'Test Meeting', start }]);
+    },
     onOpenSettings: openSettings,
     onQuit: () => app.quit(),
     onSnooze: (until) => { settings.set('snoozeUntilEpochMs', until); tray.refresh(); },
