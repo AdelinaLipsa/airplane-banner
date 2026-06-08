@@ -35,7 +35,8 @@ function formatText(minutes, title, showTitle = true) {
 
 // Render the banner text to a canvas, then slice it into vertical strips that
 // each wave independently — the CodePen rippling-fabric technique.
-function buildBanner(text, theme) {
+// Retro Arcade: rippling fabric made of waving canvas slices.
+function buildFabricBanner(text, theme) {
   banner.innerHTML = '';
   const pad = 36;
   const font = '800 44px ui-monospace, Menlo, "Courier New", monospace';
@@ -69,6 +70,16 @@ function buildBanner(text, theme) {
     }
   };
   img.src = url;
+}
+
+// Aurora Glass / Sunset Pop / Mono Minimal: a single styled DOM banner whose
+// look (glass panel, gradient pill, minimal bar) comes from CSS per data-theme.
+function buildFlatBanner(text) {
+  banner.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'flat-banner';
+  el.textContent = text;
+  banner.appendChild(el);
 }
 
 // A short two-note "fanfare" via Web Audio — no asset needed.
@@ -122,8 +133,12 @@ document.addEventListener('click', () => {
 });
 
 function fly(payload) {
-  const theme = applyTheme(payload.theme);
-  buildBanner(formatText(payload.minutes, payload.title, payload.showTitle !== false), theme);
+  const themeName = THEMES[payload.theme] ? payload.theme : 'retro';
+  const theme = applyTheme(themeName);
+  document.body.dataset.theme = themeName;
+  const text = formatText(payload.minutes, payload.title, payload.showTitle !== false);
+  if (themeName === 'retro') buildFabricBanner(text, theme);
+  else buildFlatBanner(text);
   if (payload.sound) playChime();
   currentLink = payload.link || null;
   clickable = !!(payload.clickable && currentLink);
