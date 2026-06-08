@@ -5,6 +5,7 @@ const { flyBanner } = require('./windows/overlay-window');
 const { createScheduler } = require('./scheduler');
 const { openSettingsWindow } = require('./windows/settings-window');
 const presence = require('./presence');
+const updater = require('./updater');
 const auth = require('./calendar/auth');
 const { fetchUpcomingEvents } = require('./calendar/client');
 const { normalizeEvents } = require('./calendar/normalize');
@@ -154,6 +155,8 @@ app.whenReady().then(() => {
     onSnooze: (until) => { settings.set('snoozeUntilEpochMs', until); tray.refresh(); },
     onTogglePause: () => { settings.set('paused', !settings.get('paused')); tray.refresh(); },
     onOpenLink: (url) => { if (typeof url === 'string' && /^https?:\/\//.test(url)) shell.openExternal(url); },
+    onCheckForUpdates: () => updater.checkNow(),
+    canUpdate: updater.canUpdate(),
   });
   tray.setStatus('No calendar connected');
   applyLaunchAtLogin();
@@ -166,6 +169,8 @@ app.whenReady().then(() => {
     tray.setAgenda(cached.filter((e) => e.start <= endOfLocalDay()));
   }
   startPolling();
+  // Background auto-update; reflect download/ready state in the tray status.
+  updater.start((line) => { if (line && tray) tray.setStatus(line); });
   powerMonitor.on('resume', () => poll());
 });
 

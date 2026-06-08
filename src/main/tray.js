@@ -5,7 +5,7 @@ const settings = require('./settings');
 
 const MIN = 60000;
 
-function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSnooze, onTogglePause, onOpenLink }) {
+function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSnooze, onTogglePause, onOpenLink, onCheckForUpdates, canUpdate }) {
   const icon = nativeImage.createFromPath(
     path.join(__dirname, '..', '..', 'assets', 'trayTemplate.png'));
   const tray = new Tray(icon);
@@ -61,6 +61,7 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
       { label: paused ? 'Resume' : 'Pause', click: onTogglePause },
       { type: 'separator' },
       { label: 'Settings…', click: onOpenSettings },
+      ...(onCheckForUpdates && canUpdate ? [{ label: 'Check for updates…', click: onCheckForUpdates }] : []),
       { label: 'Quit', click: onQuit },
     ]));
   }
