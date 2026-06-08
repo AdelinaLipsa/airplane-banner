@@ -14,6 +14,14 @@
              padding: 8px 14px; font-weight: 700; cursor: pointer; }
     #status { font-size: 13px; color: #555; }
     .save-bar { position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
+    .account { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin: 8px 0; }
+    .account-head { display: flex; align-items: center; justify-content: space-between; }
+    .account-email { font-weight: 600; font-size: 14px; }
+    .account-head button { background: #eee; color: #444; padding: 4px 10px; font-weight: 500; }
+    .cal-list { margin: 6px 0 0; }
+    .cal-list label { margin: 5px 0; }
+    .cal-primary { font-size: 11px; color: #888; }
+    .cal-empty { font-size: 12px; color: #888; margin: 6px 0 0; }
 
     /* Live theme preview — a tiny banner+plane loops across so the four styles
        can be compared without a Test flight. */
@@ -56,11 +64,11 @@
   <h1>✈️ Airplane Banner</h1>
 
   <fieldset>
-    <legend>Google Calendar</legend>
+    <legend>Google Calendar accounts</legend>
     <p id="status">Checking…</p>
-    <div class="row">
-      <button id="signIn">Sign in with Google</button>
-      <button id="signOut">Sign out</button>
+    <div id="accountsList"></div>
+    <div class="row" style="margin-top:8px">
+      <button id="signIn">+ Add account</button>
     </div>
   </fieldset>
 
@@ -91,7 +99,6 @@
     <legend>Which meetings</legend>
     <label class="row"><input id="skipAllDay" type="checkbox" /> Skip all-day events</label>
     <label class="row"><input id="skipDeclined" type="checkbox" /> Skip events I declined</label>
-    <label class="row"><input id="primaryCalendarOnly" type="checkbox" /> Primary calendar only</label>
     <label class="row"><input id="requireAttendeesOrLink" type="checkbox" /> Require attendees or a video link</label>
     <label class="row"><input id="showTitle" type="checkbox" /> Show meeting title on banner</label>
   </fieldset>

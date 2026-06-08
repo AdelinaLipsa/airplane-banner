@@ -5,5 +5,8 @@ contextBridge.exposeInMainWorld('settingsApi', {
   save: (patch) => ipcRenderer.invoke('settings:save', patch),
   signIn: () => ipcRenderer.invoke('auth:signIn'),
   signOut: () => ipcRenderer.invoke('auth:signOut'),
+  signOutAccount: (id) => ipcRenderer.invoke('auth:signOutAccount', id),
+  toggleCalendar: (accountId, calendarId, selected) =>
+    ipcRenderer.invoke('accounts:toggleCalendar', { accountId, calendarId, selected }),
   authStatus: () => ipcRenderer.invoke('auth:status'),
 });

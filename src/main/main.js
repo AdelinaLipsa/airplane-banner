@@ -6,8 +6,9 @@ const { createScheduler } = require('./scheduler');
 const { openSettingsWindow } = require('./windows/settings-window');
 const presence = require('./presence');
 const updater = require('./updater');
+const accountsLib = require('./accounts');
 const auth = require('./calendar/auth');
-const { fetchUpcomingEvents } = require('./calendar/client');
+const { fetchUpcomingEvents, listCalendars } = require('./calendar/client');
 const { normalizeEvents } = require('./calendar/normalize');
 const { filterEvents } = require('./calendar/filter');
 
@@ -69,9 +70,25 @@ ipcMain.handle('settings:save', (_e, patch) => {
 });
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });
 ipcMain.handle('auth:signOut', () => { auth.signOut(); scheduler.clear(); settings.clearFired(); return true; });
+ipcMain.handle('auth:signOutAccount', (_e, id) => {
+  auth.signOutAccount(id);
+  if (!auth.hasValidAuth()) { scheduler.clear(); settings.clearFired(); }
+  if (auth.hasValidAuth()) startPolling();
+  return true;
+});
+ipcMain.handle('accounts:toggleCalendar', (_e, { accountId, calendarId, selected }) => {
+  const accounts = (settings.get('accounts') || []).map((a) => (a.id !== accountId ? a : {
+    ...a, calendars: (a.calendars || []).map((c) => (c.id === calendarId ? { ...c, selected } : c)),
+  }));
+  settings.set('accounts', accounts);
+  if (auth.hasValidAuth()) startPolling();
+  return true;
+});
 ipcMain.handle('auth:status', () => ({
   signedIn: auth.hasValidAuth(),
   hasCredentials: auth.hasCredentials(),
+  // Account metadata only (no tokens) for the Settings calendar pickers.
+  accounts: (settings.get('accounts') || []).map((a) => ({ id: a.id, email: a.email, calendars: a.calendars || [] })),
 }));
 
 let pollTimer = null;
@@ -106,15 +123,62 @@ function endOfLocalDay() {
   return d.getTime();
 }
 
+// Pull events from every selected calendar of every signed-in account, lazily
+// hydrating an account's calendar list/email on first sight. Returns the merged,
+// account-namespaced, normalized events (unfiltered, unsorted).
+async function fetchAllAccounts(clients, hoursAhead) {
+  let meta = settings.get('accounts') || [];
+  let metaChanged = false;
+  const out = [];
+  for (const { account, client } of clients) {
+    let calendars = account.calendars;
+    if (!calendars || !calendars.length) {
+      try {
+        const fetched = await listCalendars(client);
+        const email = (fetched.find((c) => c.primary) || {}).id || account.email;
+        calendars = accountsLib.mergeCalendars([], fetched);
+        meta = meta.map((a) => (a.id === account.id ? { ...a, email, calendars } : a));
+        metaChanged = true;
+      } catch (e) { console.error('calendar list failed:', e.message); }
+    }
+    for (const cal of accountsLib.selectedCalendars({ calendars })) {
+      try {
+        const raw = await fetchUpcomingEvents(client, { hoursAhead, calendarId: cal.id });
+        for (const ev of normalizeEvents(raw, { calendarId: cal.id })) {
+          out.push({ ...ev, id: accountsLib.namespaceId(account.id, ev.id) });
+        }
+      } catch (e) { console.error(`fetch ${cal.id} failed:`, e.message); }
+    }
+  }
+  if (metaChanged) settings.set('accounts', meta);
+  return out;
+}
+
+// Drop duplicates of the same meeting that appear on more than one selected
+// calendar/account (same title + start), so it only flies once.
+function dedupeEvents(events) {
+  const seen = new Set();
+  return events.filter((e) => {
+    const key = `${e.title}|${e.start}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 async function poll() {
-  const client = auth.getOAuthClient();
-  if (!client) { if (tray) tray.setStatus('Not signed in'); scheduleNextPoll(null); return; }
+  const clients = auth.accountClients();
+  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); scheduleNextPoll(null); return; }
   try {
     // Fetch at least 4h out, but always through end of today so the tray agenda
     // shows every remaining meeting (not just those in the next few hours).
     const hoursAhead = Math.max(4, (endOfLocalDay() - Date.now()) / 3600000 + 0.02);
-    const raw = await fetchUpcomingEvents(client, { hoursAhead });
-    const events = filterEvents(normalizeEvents(raw, { calendarId: 'primary' }), settings.get('filters'))
+    const raw = await fetchAllAccounts(clients, hoursAhead);
+    // Calendar selection already governs inclusion, so don't also drop by
+    // primary-only here; the other meeting filters still apply.
+    const events = dedupeEvents(
+      filterEvents(raw, { ...settings.get('filters'), primaryCalendarOnly: false }),
+    )
       .filter((e) => Number.isFinite(e.start))
       .sort((a, b) => a.start - b.start);
     scheduler.update(events);
@@ -159,6 +223,7 @@ app.whenReady().then(() => {
     canUpdate: updater.canUpdate(),
   });
   tray.setStatus('No calendar connected');
+  settings.migrateLegacyAccount(); // move a pre-multi-account install's tokens
   applyLaunchAtLogin();
   // Arm reminders from the last cached events immediately, so a meeting that's
   // due in the seconds-to-minutes before the first poll returns isn't missed.

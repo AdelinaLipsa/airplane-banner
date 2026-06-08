@@ -3,13 +3,64 @@ const $ = (id) => document.getElementById(id);
 
 async function refreshStatus() {
   const s = await api.authStatus();
-  $('status').textContent = s.signedIn
-    ? '✅ Connected to Google Calendar'
-    : (s.hasCredentials ? 'Not signed in.' : 'This build isn’t configured for Google sign-in yet.');
-  // Show only the relevant button for the current state.
-  $('signIn').style.display = s.signedIn ? 'none' : '';
-  $('signOut').style.display = s.signedIn ? '' : 'none';
+  const accounts = s.accounts || [];
+  $('status').textContent = accounts.length
+    ? `✅ ${accounts.length} account${accounts.length > 1 ? 's' : ''} connected`
+    : (s.hasCredentials ? 'No accounts connected.' : 'This build isn’t configured for Google sign-in yet.');
   $('signIn').disabled = !s.hasCredentials;
+  renderAccounts(accounts);
+}
+
+// Render each connected account with its selectable calendars. Calendar toggles
+// and sign-out take effect immediately (their own IPC), independent of Save.
+function renderAccounts(accounts) {
+  const list = $('accountsList');
+  list.innerHTML = '';
+  for (const acct of accounts) {
+    const box = document.createElement('div');
+    box.className = 'account';
+
+    const head = document.createElement('div');
+    head.className = 'account-head';
+    const email = document.createElement('span');
+    email.className = 'account-email';
+    email.textContent = acct.email || 'Account (syncing…)';
+    const signOut = document.createElement('button');
+    signOut.textContent = 'Sign out';
+    signOut.addEventListener('click', async () => { await api.signOutAccount(acct.id); await refreshStatus(); });
+    head.append(email, signOut);
+    box.appendChild(head);
+
+    const cals = acct.calendars || [];
+    if (!cals.length) {
+      const p = document.createElement('p');
+      p.className = 'cal-empty';
+      p.textContent = 'Calendars appear after the first sync.';
+      box.appendChild(p);
+    } else {
+      const wrap = document.createElement('div');
+      wrap.className = 'cal-list';
+      for (const cal of cals) {
+        const label = document.createElement('label');
+        label.className = 'row';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!cal.selected;
+        cb.addEventListener('change', () => api.toggleCalendar(acct.id, cal.id, cb.checked));
+        label.appendChild(cb);
+        label.append(' ' + (cal.summary || cal.id));
+        if (cal.primary) {
+          const badge = document.createElement('span');
+          badge.className = 'cal-primary';
+          badge.textContent = '  (primary)';
+          label.appendChild(badge);
+        }
+        wrap.appendChild(label);
+      }
+      box.appendChild(wrap);
+    }
+    list.appendChild(box);
+  }
 }
 
 async function load() {
@@ -26,7 +77,6 @@ async function load() {
   $('suppressInDnd').checked = c.suppressInDnd !== false;
   $('skipAllDay').checked = c.filters.skipAllDay;
   $('skipDeclined').checked = c.filters.skipDeclined;
-  $('primaryCalendarOnly').checked = c.filters.primaryCalendarOnly;
   $('requireAttendeesOrLink').checked = c.filters.requireAttendeesOrLink;
   $('showTitle').checked = c.showTitle;
   $('theme').value = c.theme || 'retro';
@@ -61,7 +111,6 @@ function collect() {
     filters: {
       skipAllDay: $('skipAllDay').checked,
       skipDeclined: $('skipDeclined').checked,
-      primaryCalendarOnly: $('primaryCalendarOnly').checked,
       requireAttendeesOrLink: $('requireAttendeesOrLink').checked,
     },
     showTitle: $('showTitle').checked,
@@ -145,6 +194,5 @@ $('signIn').addEventListener('click', async () => {
   try { await api.signIn(); } catch (e) { $('status').textContent = 'Error: ' + e.message; }
   await refreshStatus();
 });
-$('signOut').addEventListener('click', async () => { await api.signOut(); await refreshStatus(); });
 
 load();

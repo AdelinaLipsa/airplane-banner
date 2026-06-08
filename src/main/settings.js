@@ -30,6 +30,7 @@ const DEFAULTS = {
     endHour: 19,
     days: [1, 2, 3, 4, 5], // 0=Sun … 6=Sat (default Mon–Fri)
   },
+  accounts: [], // [{ id, email, calendars: [{ id, summary, primary, selected }] }]
   oauthClientId: '',
   oauthClientSecret: '',
 };
@@ -60,6 +61,51 @@ function loadTokens() {
   return plain ? JSON.parse(plain) : null;
 }
 function clearTokens() { store.delete('tokensEnc'); store.delete('tokensPlain'); }
+
+// --- Per-account encrypted token storage ----------------------------------
+// Each account's tokens live under acctTokensEnc[id] (encrypted) or, when no
+// keyring is available, acctTokensPlain[id]. Account metadata (id/email/
+// calendars) lives in the non-secret `accounts` array.
+function saveAccountTokens(id, tokens) {
+  const json = JSON.stringify(tokens);
+  if (safeStorage.isEncryptionAvailable()) {
+    const map = store.get('acctTokensEnc') || {};
+    map[id] = safeStorage.encryptString(json).toString('base64');
+    store.set('acctTokensEnc', map);
+  } else {
+    const map = store.get('acctTokensPlain') || {};
+    map[id] = json;
+    store.set('acctTokensPlain', map);
+  }
+}
+function loadAccountTokens(id) {
+  const enc = store.get('acctTokensEnc') || {};
+  if (enc[id] && safeStorage.isEncryptionAvailable()) {
+    try { return JSON.parse(safeStorage.decryptString(Buffer.from(enc[id], 'base64'))); }
+    catch { return null; }
+  }
+  const plain = store.get('acctTokensPlain') || {};
+  return plain[id] ? JSON.parse(plain[id]) : null;
+}
+function deleteAccountTokens(id) {
+  for (const key of ['acctTokensEnc', 'acctTokensPlain']) {
+    const map = store.get(key);
+    if (map && map[id] != null) { delete map[id]; store.set(key, map); }
+  }
+}
+
+// One-time migration: an older single-account install kept tokens in tokensEnc/
+// tokensPlain. Move them under a stable id and seed one account whose calendars
+// hydrate on the next poll. Safe to call on every launch (no-ops once done).
+function migrateLegacyAccount() {
+  const accounts = store.get('accounts') || [];
+  const legacy = loadTokens();
+  if (!legacy || accounts.length) return;
+  const id = '__migrated__';
+  saveAccountTokens(id, legacy);
+  store.set('accounts', [{ id, email: null, calendars: [] }]);
+  clearTokens();
+}
 
 // --- Fired-reminder persistence (so restarts don't re-fly seen reminders) ---
 const FIRED_TTL_MS = 24 * 60 * 60 * 1000; // forget entries older than a day
@@ -105,5 +151,6 @@ function loadEvents() {
 
 module.exports = {
   DEFAULTS, getAll, get, set, saveTokens, loadTokens, clearTokens,
+  saveAccountTokens, loadAccountTokens, deleteAccountTokens, migrateLegacyAccount,
   getFired, addFired, clearFired, saveEvents, loadEvents,
 };
