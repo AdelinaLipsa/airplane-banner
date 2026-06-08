@@ -36,6 +36,39 @@ test('reminderKey is stable per event+offset', () => {
   assert.strictEqual(reminderKey({ eventId: 'a', offset: 5 }), 'a:5');
 });
 
+test('per-event reminderOverrides replace the global offsets', () => {
+  const now = 1000000;
+  const events = [{ id: 'a', title: 'Standup', start: now + 30 * MIN, reminderOverrides: [10] }];
+  const out = computeReminders(events, [15, 5, 0], now);
+  assert.strictEqual(out.length, 1);
+  assert.strictEqual(out[0].offset, 10);
+});
+
+test('empty reminderOverrides ([]) means the event never fires', () => {
+  const now = 1000000;
+  const events = [{ id: 'a', title: 'Silenced', start: now + 30 * MIN, reminderOverrides: [] }];
+  assert.strictEqual(computeReminders(events, [15, 5, 0], now).length, 0);
+});
+
+test('null reminderOverrides falls back to global offsets', () => {
+  const now = 1000000;
+  const events = [{ id: 'a', title: 'Standup', start: now + 30 * MIN, reminderOverrides: null }];
+  assert.strictEqual(computeReminders(events, [15, 5], now).length, 2);
+});
+
+test('optOut events are skipped entirely', () => {
+  const now = 1000000;
+  const events = [{ id: 'a', title: 'Focus', start: now + 30 * MIN, optOut: true }];
+  assert.strictEqual(computeReminders(events, [15, 5, 0], now).length, 0);
+});
+
+test('respectEventReminders:false ignores per-event overrides', () => {
+  const now = 1000000;
+  const events = [{ id: 'a', title: 'Standup', start: now + 30 * MIN, reminderOverrides: [10] }];
+  const out = computeReminders(events, [15, 5, 0], now, { respectEventReminders: false });
+  assert.strictEqual(out.length, 3);
+});
+
 test('computeReminders includes the event start time', () => {
   const now = 1000000;
   const events = [ev('a', 20)];

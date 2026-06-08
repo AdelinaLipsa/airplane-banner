@@ -15,6 +15,7 @@ async function refreshStatus() {
 async function load() {
   const c = await api.load();
   $('offsets').value = (c.reminderOffsetsMinutes || []).join(', ');
+  $('respectEventReminders').checked = c.respectEventReminders !== false;
   const ah = c.activeHours || {};
   $('activeHoursEnabled').checked = !!ah.enabled;
   $('startHour').value = ah.startHour != null ? ah.startHour : 8;
@@ -47,6 +48,7 @@ function collect() {
     .filter((n) => Number.isFinite(n) && n >= 0);
   return {
     reminderOffsetsMinutes: offsets.length ? offsets : [15, 5, 0],
+    respectEventReminders: $('respectEventReminders').checked,
     activeHours: {
       enabled: $('activeHoursEnabled').checked,
       startHour: clampHour($('startHour').value, 8),

@@ -19,6 +19,7 @@ let tray = null;
 const scheduler = createScheduler({
   getState: () => ({
     offsetsMinutes: settings.get('reminderOffsetsMinutes'),
+    respectEventReminders: settings.get('respectEventReminders'),
     paused: settings.get('paused'),
     snoozeUntilEpochMs: settings.get('snoozeUntilEpochMs'),
     activeHours: settings.get('activeHours'),

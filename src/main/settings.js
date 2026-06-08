@@ -4,6 +4,7 @@ const { safeStorage } = require('electron');
 
 const DEFAULTS = {
   reminderOffsetsMinutes: [15, 5, 0],
+  respectEventReminders: true,
   filters: {
     skipAllDay: true,
     skipDeclined: true,
@@ -90,6 +91,7 @@ function clearFired() { store.set('firedReminders', {}); }
 function saveEvents(events) {
   const slim = (events || []).map((e) => ({
     id: e.id, title: e.title, start: e.start, conferenceLink: e.conferenceLink || null,
+    reminderOverrides: e.reminderOverrides || null, optOut: !!e.optOut,
   }));
   store.set('cachedEvents', slim);
 }

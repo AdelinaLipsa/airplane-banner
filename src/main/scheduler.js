@@ -2,10 +2,17 @@
 
 const MIN = 60000;
 
-function computeReminders(events, offsetsMinutes, now) {
+function computeReminders(events, offsetsMinutes, now, opts = {}) {
+  const respectEventReminders = opts.respectEventReminders !== false;
   const out = [];
   for (const event of events) {
-    for (const offset of offsetsMinutes) {
+    if (event.optOut) continue; // [no-fly] meetings never fly
+    // Honor the event's own reminder times when present (an empty array means
+    // the user silenced this event); otherwise use the global offsets.
+    const offsets = (respectEventReminders && Array.isArray(event.reminderOverrides))
+      ? event.reminderOverrides
+      : offsetsMinutes;
+    for (const offset of offsets) {
       const fireAt = event.start - offset * MIN;
       if (fireAt > now) {
         out.push({ eventId: event.id, offset, fireAt, minutes: offset, title: event.title, startAt: event.start, link: event.conferenceLink || null });
@@ -77,8 +84,8 @@ function createScheduler({ getState, onFly, loadFired, saveFired }) {
   return {
     // Recompute from the latest events; arm any new, not-yet-fired reminders.
     update(events) {
-      const { offsetsMinutes } = getState();
-      const reminders = computeReminders(events, offsetsMinutes, Date.now());
+      const { offsetsMinutes, respectEventReminders } = getState();
+      const reminders = computeReminders(events, offsetsMinutes, Date.now(), { respectEventReminders });
       for (const r of reminders) arm(r);
     },
     // Fire a sample banner immediately (Test flight). Marked test:true so it

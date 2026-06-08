@@ -60,6 +60,42 @@ test('missing summary falls back to "Meeting", missing attendees safe', () => {
   assert.strictEqual(ev.responseStatus, null);
 });
 
+test('reminderOverrides is null when reminders use the default', () => {
+  const ev = normalizeEvent({ ...base, reminders: { useDefault: true } }, { calendarId: 'primary' });
+  assert.strictEqual(ev.reminderOverrides, null);
+});
+
+test('reminderOverrides extracts custom popup minutes (deduped, sorted)', () => {
+  const ev = normalizeEvent({
+    ...base,
+    reminders: { useDefault: false, overrides: [
+      { method: 'popup', minutes: 10 },
+      { method: 'email', minutes: 60 },
+      { method: 'popup', minutes: 2 },
+      { method: 'popup', minutes: 10 },
+    ] },
+  }, { calendarId: 'primary' });
+  assert.deepStrictEqual(ev.reminderOverrides, [2, 10]);
+});
+
+test('reminderOverrides falls back to any method when no popup override', () => {
+  const ev = normalizeEvent({
+    ...base, reminders: { useDefault: false, overrides: [{ method: 'email', minutes: 30 }] },
+  }, { calendarId: 'primary' });
+  assert.deepStrictEqual(ev.reminderOverrides, [30]);
+});
+
+test('reminderOverrides is [] when notifications explicitly silenced', () => {
+  const ev = normalizeEvent({ ...base, reminders: { useDefault: false, overrides: [] } }, { calendarId: 'primary' });
+  assert.deepStrictEqual(ev.reminderOverrides, []);
+});
+
+test('optOut detects [no-fly] / #nofly markers in title or description', () => {
+  assert.strictEqual(normalizeEvent({ ...base, summary: 'Focus [no-fly]' }, { calendarId: 'primary' }).optOut, true);
+  assert.strictEqual(normalizeEvent({ ...base, description: 'please #nofly' }, { calendarId: 'primary' }).optOut, true);
+  assert.strictEqual(normalizeEvent(base, { calendarId: 'primary' }).optOut, false);
+});
+
 test('normalizeEvents maps a list and tags calendarId', () => {
   const out = normalizeEvents([base], { calendarId: 'primary' });
   assert.strictEqual(out.length, 1);
