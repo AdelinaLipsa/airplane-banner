@@ -27,13 +27,15 @@
         "dmg",
         "zip"
       ],
+      "artifactName": "Airplane-Banner-${version}-macOS.${ext}",
       "category": "public.app-category.productivity",
       "extendInfo": {
         "LSUIElement": 1
       }
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "artifactName": "Airplane-Banner-${version}-Windows.${ext}"
     },
     "publish": [
       {

@@ -36,7 +36,7 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            build: npx electron-builder --mac --arm64 --x64
+            build: npx electron-builder --mac --universal
           - os: windows-latest
             build: npx electron-builder --win --x64
     runs-on: ${{ matrix.os }}
@@ -97,5 +97,14 @@ jobs:
         with:
           draft: false
           tag_name: ${{ github.ref_name }}
+          body: |
+            ### Which file do I download?
+            - **macOS** → the **`.dmg`** (universal — works on both Apple Silicon and Intel Macs)
+            - **Windows** → the **`.exe`**
+
+            The `.zip`, `.yml`, and `.blockmap` files are for the in-app auto-updater — you can ignore them.
+
+            **macOS first launch:** this build isn't notarized by Apple yet, so macOS may say it "could not verify" the app. Right-click the app → **Open** → **Open**, or run:
+            `xattr -dr com.apple.quarantine "/Applications/Airplane Banner.app"`
           files: artifacts/**/*
           fail_on_unmatched_files: true
