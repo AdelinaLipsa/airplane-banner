@@ -30,19 +30,26 @@
       // chiptune hook (we can't bundle the actual recording). Auto-plays with
       // the Rick Roll craft; also selectable on its own.
       label: 'Rick Roll 🎵', reverb: 0.16,
+      // Actual chorus melody in A major (looked up, not guessed):
+      // "Never gonna give you up" = A B D B F# F# E
+      // "Never gonna let you down" = A B D B E E D C# B
       notes: [
-        { freq: 415.30, at: 0.00, dur: 0.15, type: 'square' }, // Ab4  Ne-
-        { freq: 415.30, at: 0.17, dur: 0.15, type: 'square' }, //      ver
-        { freq: 466.16, at: 0.34, dur: 0.15, type: 'square' }, // Bb4  gon-
-        { freq: 415.30, at: 0.51, dur: 0.15, type: 'square' }, //      na
-        { freq: 554.37, at: 0.70, dur: 0.28, type: 'square' }, // Db5  give you
-        { freq: 523.25, at: 0.98, dur: 0.44, type: 'square', release: 0.4 }, // C5 up
-        { freq: 415.30, at: 1.46, dur: 0.15, type: 'square' },
-        { freq: 415.30, at: 1.63, dur: 0.15, type: 'square' },
-        { freq: 466.16, at: 1.80, dur: 0.15, type: 'square' },
-        { freq: 415.30, at: 1.97, dur: 0.15, type: 'square' },
-        { freq: 622.25, at: 2.16, dur: 0.28, type: 'square' }, // Eb5  let you
-        { freq: 554.37, at: 2.44, dur: 0.52, type: 'square', release: 0.5 }, // Db5 down
+        { freq: 440.00, at: 0.00, dur: 0.14, type: 'square' }, // A   Ne-
+        { freq: 493.88, at: 0.15, dur: 0.14, type: 'square' }, // B   ver
+        { freq: 587.33, at: 0.30, dur: 0.16, type: 'square' }, // D   gon-
+        { freq: 493.88, at: 0.47, dur: 0.16, type: 'square' }, // B   na
+        { freq: 739.99, at: 0.64, dur: 0.22, type: 'square' }, // F#  give
+        { freq: 739.99, at: 0.88, dur: 0.22, type: 'square' }, // F#  you
+        { freq: 659.25, at: 1.12, dur: 0.40, type: 'square', release: 0.35 }, // E up
+        { freq: 440.00, at: 1.62, dur: 0.14, type: 'square' }, // A   Ne-
+        { freq: 493.88, at: 1.77, dur: 0.14, type: 'square' }, // B   ver
+        { freq: 587.33, at: 1.92, dur: 0.16, type: 'square' }, // D   gon-
+        { freq: 493.88, at: 2.09, dur: 0.16, type: 'square' }, // B   na
+        { freq: 659.25, at: 2.26, dur: 0.22, type: 'square' }, // E   let
+        { freq: 659.25, at: 2.50, dur: 0.22, type: 'square' }, // E   you
+        { freq: 587.33, at: 2.74, dur: 0.16, type: 'square' }, // D   down
+        { freq: 554.37, at: 2.92, dur: 0.16, type: 'square' }, // C#
+        { freq: 493.88, at: 3.10, dur: 0.44, type: 'square', release: 0.4 }, // B
       ],
     },
     airport: {
