@@ -9,11 +9,17 @@ let calColors = {};
 let customCraftPath = '';
 
 function updateCraftUI() {
-  const custom = $('craft').value === 'custom';
-  $('customCraftRow').style.display = custom ? '' : 'none';
+  const craft = $('craft').value;
+  $('customCraftRow').style.display = craft === 'custom' ? '' : 'none';
   $('craftFileName').textContent = customCraftPath
     ? customCraftPath.split('/').pop()
     : 'No file chosen';
+  // Rick Roll comes with its own song — lock out the chime controls so users
+  // don't think they can pick a different sound for it.
+  const rick = craft === 'rickroll';
+  $('rickSoundNote').style.display = rick ? '' : 'none';
+  for (const id of ['sound', 'soundName', 'soundVolume', 'soundPreview']) $(id).disabled = rick;
+  updateSoundOpts();
 }
 
 async function refreshStatus() {
@@ -269,7 +275,10 @@ $('activeHoursEnabled').addEventListener('change', updateActiveHoursOpts);
   }
 })();
 function updateVolLabel() { $('volLabel').textContent = $('soundVolume').value + '%'; }
-function updateSoundOpts() { $('soundOpts').style.opacity = $('sound').checked ? '1' : '0.45'; }
+function updateSoundOpts() {
+  const rick = $('craft').value === 'rickroll';
+  $('soundOpts').style.opacity = (!rick && $('sound').checked) ? '1' : '0.45';
+}
 $('soundVolume').addEventListener('input', updateVolLabel);
 $('sound').addEventListener('change', updateSoundOpts);
 $('soundPreview').addEventListener('click', () => {
