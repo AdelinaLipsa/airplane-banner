@@ -24,7 +24,7 @@ function updateCraftUI() {
   // the plane). Custom uses the processed file via file://.
   const src = craft === 'custom'
     ? (customCraftPath ? 'file://' + customCraftPath : '../overlay/plane.png')
-    : ({ ufo: '../overlay/ufo.png', rickroll: '../overlay/rickroll.gif', kittens: '../overlay/kittens.gif' }[craft] || '../overlay/plane.png');
+    : ({ ufo: '../overlay/ufo.png', rickroll: '../overlay/rickroll.gif', kittens: '../overlay/kittens.webp' }[craft] || '../overlay/plane.png');
   const mini = document.querySelector('.mini-plane');
   if (mini) mini.src = src;
 }
