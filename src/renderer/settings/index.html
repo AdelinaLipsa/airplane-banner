@@ -23,8 +23,13 @@
     }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; color: var(--fg); background: var(--bg); }
     h1 { font-size: 18px; font-family: ui-monospace, Menlo, "Courier New", monospace; letter-spacing: 0.5px; }
-    fieldset { border: 1px solid var(--card-border); border-radius: 10px; margin: 14px 0; padding: 12px 14px; background: var(--card-bg); }
-    legend { font-weight: 700; font-family: ui-monospace, Menlo, "Courier New", monospace; color: var(--legend); padding: 0 6px; }
+    /* Collapsible sections — native <details>/<summary> accordions. */
+    details { border: 1px solid var(--card-border); border-radius: 10px; margin: 14px 0; padding: 0 14px; background: var(--card-bg); }
+    details[open] { padding-bottom: 12px; }
+    summary { font-weight: 700; font-family: ui-monospace, Menlo, "Courier New", monospace; color: var(--legend); padding: 11px 2px; cursor: pointer; list-style: none; user-select: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "\25B8"; display: inline-block; width: 1em; color: var(--muted); transition: transform 0.15s ease; }
+    details[open] > summary::before { transform: rotate(90deg); }
     label { display: block; margin: 8px 0; font-size: 14px; }
     input[type=text], input[type=password], input[type=number], select {
       padding: 6px; box-sizing: border-box; background: var(--field-bg); color: var(--fg);
@@ -90,26 +95,26 @@
 <body>
   <h1>✈️ Airplane Banner</h1>
 
-  <fieldset>
-    <legend>Google Calendar accounts</legend>
+  <details open>
+    <summary>Google Calendar accounts</summary>
     <p id="status">Checking…</p>
     <div id="accountsList"></div>
     <div class="row" style="margin-top:8px">
       <button id="signIn">+ Add account</button>
     </div>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Reminders</legend>
+  <details open>
+    <summary>Reminders</summary>
     <label>Minutes before each meeting (comma-separated)
       <input id="offsets" type="text" placeholder="15, 5, 0" />
     </label>
     <label class="row"><input id="respectEventReminders" type="checkbox" /> Use each meeting’s own reminder times when it sets them</label>
     <p style="font-size:12px;color:#888;margin:4px 0 0">Tip: add <code>[no-fly]</code> to a meeting’s title to skip it.</p>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>When to fly</legend>
+  <details open>
+    <summary>When to fly</summary>
     <label class="row"><input id="activeHoursEnabled" type="checkbox" /> Only fly during working hours</label>
     <div id="activeHoursOpts" style="margin-left:24px">
       <label class="row">From
@@ -126,18 +131,18 @@
         <option value="primary">My primary screen</option>
       </select>
     </label>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Which meetings</legend>
+  <details open>
+    <summary>Which meetings</summary>
     <label class="row"><input id="skipAllDay" type="checkbox" /> Skip all-day events</label>
     <label class="row"><input id="skipDeclined" type="checkbox" /> Skip events I declined</label>
     <label class="row"><input id="requireAttendeesOrLink" type="checkbox" /> Require attendees or a video link</label>
     <label class="row"><input id="showTitle" type="checkbox" /> Show meeting title on banner</label>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Appearance</legend>
+  <details open>
+    <summary>Appearance</summary>
     <label>Aircraft
       <select id="craft">
         <option value="tarom">TAROM plane (default)</option>
@@ -182,13 +187,13 @@
       <button id="testFlight" type="button">✈️ Test flight</button>
       <span style="color:#888;font-size:12px">Preview with the settings above (no need to Save)</span>
     </div>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>App</legend>
+  <details open>
+    <summary>App</summary>
     <label class="row"><input id="launchAtLogin" type="checkbox" /> Launch at login</label>
     <label class="row"><input id="showCountdownInBar" type="checkbox" /> Show countdown next to the menu-bar icon <span style="color:#888">(macOS)</span></label>
-  </fieldset>
+  </details>
 
   <div class="save-bar"><button id="save">Save</button> <span id="saved"></span></div>
 
