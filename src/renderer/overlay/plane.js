@@ -120,7 +120,6 @@ function fly(payload) {
   const text = formatText(payload.minutes, payload.title, payload.showTitle !== false);
   if (themeName === 'retro') buildFabricBanner(text, theme);
   else buildFlatBanner(text);
-  if (payload.sound) playChime(payload.soundName, payload.soundVolume);
   currentLink = payload.link || null;
   clickable = !!(payload.clickable && currentLink);
   setInteractive(false);
@@ -131,6 +130,25 @@ function fly(payload) {
   flight.classList.remove('flying');
   void flight.offsetWidth; // restart the CSS animation
   flight.classList.add('flying');
+  if (payload.sound) playChimeOnEntry(payload);
+}
+
+// The chime should land as the plane appears, not while it's still off-screen
+// to the left. The plane leads the assembly, so watch its on-screen position
+// each frame and fire once it crosses the left edge into view.
+let chimeRaf = 0;
+function playChimeOnEntry(payload) {
+  if (chimeRaf) cancelAnimationFrame(chimeRaf);
+  const tick = () => {
+    const r = aircraft.getBoundingClientRect();
+    if (r.right > 0 && r.left < window.innerWidth) {
+      playChime(payload.soundName, payload.soundVolume);
+      chimeRaf = 0;
+      return;
+    }
+    chimeRaf = requestAnimationFrame(tick);
+  };
+  chimeRaf = requestAnimationFrame(tick);
 }
 
 flight.addEventListener('animationend', (e) => {
@@ -138,6 +156,7 @@ flight.addEventListener('animationend', (e) => {
     flight.classList.remove('flying');
     clickable = false;
     setInteractive(false);
+    if (chimeRaf) { cancelAnimationFrame(chimeRaf); chimeRaf = 0; } // flight over; drop any unfired chime
     if (window.overlayApi) window.overlayApi.flightDone();
   }
 });
