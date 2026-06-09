@@ -65,42 +65,52 @@ function formatText(minutes, title, showTitle = true) {
 function buildFabricBanner(text, theme) {
   banner.innerHTML = '';
   const pad = 36;
+  const logicalH = 110;
+  // Supersample the canvas to the display's pixel density so the text stays
+  // crisp instead of upscaled/pixelated while it flies across a Retina screen.
+  const dpr = Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1)));
   const font = '800 44px ui-monospace, Menlo, "Courier New", monospace';
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   ctx.font = font;
-  const textW = Math.ceil(ctx.measureText(text).width);
-  canvas.width = textW + pad * 2;
-  canvas.height = 110;
-  // Resizing the canvas resets the context state — reapply font/baseline.
+  const logicalW = Math.ceil(ctx.measureText(text).width) + pad * 2;
+  canvas.width = logicalW * dpr;
+  canvas.height = logicalH * dpr;
+  // Resizing the canvas resets the context — scale to DPR and reapply state so
+  // we can keep drawing in logical pixels.
+  ctx.scale(dpr, dpr);
   ctx.font = font;
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.fabric;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, logicalW, logicalH);
   ctx.fillStyle = theme.ink;
-  ctx.fillText(text, pad, canvas.height / 2 + 2);
+  ctx.fillText(text, pad, logicalH / 2 + 2);
 
   const url = canvas.toDataURL();
   const img = new Image();
   img.onload = () => {
-    const segW = 20;
-    const count = Math.ceil(canvas.width / segW);
+    // Slices finer than the visible wave step make the rippling top/bottom edges
+    // read as a smooth curve rather than a coarse, pixelated staircase. The
+    // high-res canvas is mapped back to logical size via background-size.
+    const segW = 10;
+    const count = Math.ceil(logicalW / segW);
     const last = Math.max(1, count - 1);
     for (let i = 0; i < count; i++) {
       const seg = document.createElement('div');
       seg.className = 'segment';
-      seg.style.height = canvas.height + 'px';
+      seg.style.width = segW + 'px';
+      seg.style.height = logicalH + 'px';
+      seg.style.backgroundImage = `url(${url})`;
+      seg.style.backgroundSize = `${logicalW}px ${logicalH}px`;
+      seg.style.backgroundPositionX = (-segW * i) + 'px';
       // Fabric realism: a towed banner is tied to the rope at its right edge
       // (highest i) and flaps free at the left. Flutter grows toward the free
-      // end, the ripple originates at the tied edge and travels outward, and
-      // the free end sways a touch slower — together that reads as cloth, not
-      // a rigid grid.
+      // end; the ripple originates at the tied edge and travels outward at a
+      // constant wavelength (delay scaled by pixel position, not slice index).
       const free = 1 - i / last;            // 1 at the free (left) end → 0 at the rope
       seg.style.setProperty('--amp', (2.5 + free * 9).toFixed(1) + 'px');
-      seg.style.animationDelay = (-i * 0.045).toFixed(3) + 's';
+      seg.style.animationDelay = (-(i * segW) * 0.0022).toFixed(3) + 's';
       seg.style.animationDuration = (1.7 + free * 0.6).toFixed(2) + 's';
-      seg.style.backgroundImage = `url(${url})`;
-      seg.style.backgroundPositionX = (-segW * i) + 'px';
       banner.appendChild(seg);
     }
   };
