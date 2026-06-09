@@ -25,33 +25,6 @@
         { freq: A5, at: 0.14, dur: 0.5, type: 'triangle', harmonics: PLUCK, release: 0.5 },
       ],
     },
-    rickroll: {
-      // "Never gonna give you up / never gonna let you down" — a synthesized
-      // chiptune hook (we can't bundle the actual recording). Auto-plays with
-      // the Rick Roll craft; also selectable on its own.
-      label: 'Rick Roll 🎵', reverb: 0.16,
-      // Actual chorus melody in A major (looked up, not guessed):
-      // "Never gonna give you up" = A B D B F# F# E
-      // "Never gonna let you down" = A B D B E E D C# B
-      notes: [
-        { freq: 440.00, at: 0.00, dur: 0.14, type: 'square' }, // A   Ne-
-        { freq: 493.88, at: 0.15, dur: 0.14, type: 'square' }, // B   ver
-        { freq: 587.33, at: 0.30, dur: 0.16, type: 'square' }, // D   gon-
-        { freq: 493.88, at: 0.47, dur: 0.16, type: 'square' }, // B   na
-        { freq: 739.99, at: 0.64, dur: 0.22, type: 'square' }, // F#  give
-        { freq: 739.99, at: 0.88, dur: 0.22, type: 'square' }, // F#  you
-        { freq: 659.25, at: 1.12, dur: 0.40, type: 'square', release: 0.35 }, // E up
-        { freq: 440.00, at: 1.62, dur: 0.14, type: 'square' }, // A   Ne-
-        { freq: 493.88, at: 1.77, dur: 0.14, type: 'square' }, // B   ver
-        { freq: 587.33, at: 1.92, dur: 0.16, type: 'square' }, // D   gon-
-        { freq: 493.88, at: 2.09, dur: 0.16, type: 'square' }, // B   na
-        { freq: 659.25, at: 2.26, dur: 0.22, type: 'square' }, // E   let
-        { freq: 659.25, at: 2.50, dur: 0.22, type: 'square' }, // E   you
-        { freq: 587.33, at: 2.74, dur: 0.16, type: 'square' }, // D   down
-        { freq: 554.37, at: 2.92, dur: 0.16, type: 'square' }, // C#
-        { freq: 493.88, at: 3.10, dur: 0.44, type: 'square', release: 0.4 }, // B
-      ],
-    },
     airport: {
       label: 'Airport chime (bong)', reverb: 0.45, reverbDur: 2.2,
       notes: [

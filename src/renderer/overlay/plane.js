@@ -133,18 +133,18 @@ function playChime(name, volume) {
   if (window.AirplaneChimes) window.AirplaneChimes.playChime(name, volume);
 }
 
-// The Rick Roll craft plays the real clip (rickroll.mp3) rather than a chime;
-// fall back to the synth hook if the file can't play.
+// The Rick Roll craft plays the real clip (rickroll.mp3); every other craft
+// uses a synthesized chime. If the clip can't play, the Rick Roll craft is
+// simply silent (no synth stand-in).
 let rickAudio = null;
 function playSound(payload) {
-  const vol = Math.min(1, Math.max(0, payload.soundVolume != null ? payload.soundVolume : 0.3));
   if (payload.craft === 'rickroll') {
     try {
       if (rickAudio) rickAudio.pause();
       rickAudio = new Audio('rickroll.mp3');
-      rickAudio.volume = vol;
-      rickAudio.play().catch(() => playChime('rickroll', vol));
-    } catch { playChime('rickroll', vol); }
+      rickAudio.volume = Math.min(1, Math.max(0, payload.soundVolume != null ? payload.soundVolume : 0.3));
+      rickAudio.play().catch(() => {});
+    } catch { /* clip unavailable — stay silent */ }
     return;
   }
   playChime(payload.soundName, payload.soundVolume);
