@@ -90,6 +90,7 @@ async function load() {
   updateSoundOpts();
   $('clickableBanner').checked = !!c.clickableBanner;
   $('launchAtLogin').checked = c.launchAtLogin;
+  $('showCountdownInBar').checked = c.showCountdownInBar !== false;
   await refreshStatus();
 }
 
@@ -121,6 +122,7 @@ function collect() {
     soundVolume: (parseInt($('soundVolume').value, 10) || 0) / 100,
     clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
+    showCountdownInBar: $('showCountdownInBar').checked,
   };
 }
 

@@ -65,6 +65,7 @@ ipcMain.handle('settings:save', (_e, patch) => {
   for (const [k, v] of Object.entries(patch)) settings.set(k, v);
   applyLaunchAtLogin();
   if (tray) tray.refresh();
+  updateBarTitle();
   if (auth.hasValidAuth()) startPolling();
   return settings.getAll();
 });
@@ -92,13 +93,48 @@ ipcMain.handle('auth:status', () => ({
 }));
 
 let pollTimer = null;
+let barTimer = null;
+let nextStartMs = null; // start of the next meeting, for the live menu-bar countdown
+
+// Refresh the menu-bar title from current state. Paused/snoozed take precedence
+// over the countdown (a glyph beats a number you can't act on); otherwise show
+// the live time to the next meeting. Called on each poll and once a minute in
+// between so the number ticks down on its own. Honors the user's toggle.
+function updateBarTitle() {
+  if (!tray) return;
+  if (!settings.get('showCountdownInBar')) { tray.setTitle(''); return; }
+  if (settings.get('paused')) { tray.setTitle('⏸'); return; }
+  const snoozeUntil = settings.get('snoozeUntilEpochMs');
+  if (snoozeUntil && snoozeUntil > Date.now()) { tray.setTitle('💤'); return; }
+  if (!nextStartMs || nextStartMs <= Date.now()) { tray.setTitle(''); return; }
+  const mins = Math.max(0, Math.round((nextStartMs - Date.now()) / 60000));
+  tray.setTitle(fmtBar(mins));
+}
+
+// Humanize a minute count: "5 min", "1h 20m", "3h". Hours kick in at 60+ so a
+// meeting hours away doesn't read as "in 200 min".
+function fmtUntil(mins) {
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+// Compact form for the menu-bar title next to the icon, where space is tight:
+// "5m", "1h20m", "3h". Empty when nothing is coming up.
+function fmtBar(mins) {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h${m}m` : `${h}h`;
+}
 
 function nextMeetingLine(events) {
   if (!events.length) return 'No meetings soon';
   const e = events[0];
   const mins = Math.max(0, Math.round((e.start - Date.now()) / 60000));
   const title = e.title.length > 40 ? e.title.slice(0, 39) + '…' : e.title;
-  return `Next: ${title} in ${mins} min`;
+  return `Next: ${title} in ${fmtUntil(mins)}`;
 }
 
 // Poll fast (~1 min) when a meeting is imminent, otherwise at the configured
@@ -168,7 +204,7 @@ function dedupeEvents(events) {
 
 async function poll() {
   const clients = auth.accountClients();
-  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); scheduleNextPoll(null); return; }
+  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); nextStartMs = null; updateBarTitle(); scheduleNextPoll(null); return; }
   try {
     // Fetch at least 4h out, but always through end of today so the tray agenda
     // shows every remaining meeting (not just those in the next few hours).
@@ -189,6 +225,8 @@ async function poll() {
       tray.setAgenda(agenda);
       tray.setStatus(nextMeetingLine(events));
     }
+    nextStartMs = events.length ? events[0].start : null;
+    updateBarTitle();
     scheduleNextPoll(events);
   } catch (err) {
     if (tray) tray.setStatus('⚠ Calendar unavailable');
@@ -199,6 +237,8 @@ async function poll() {
 
 function startPolling() {
   if (pollTimer) clearTimeout(pollTimer);
+  if (barTimer) clearInterval(barTimer);
+  barTimer = setInterval(updateBarTitle, 60000); // tick the bar countdown between polls
   poll();
 }
 
@@ -216,8 +256,8 @@ app.whenReady().then(() => {
     },
     onOpenSettings: openSettings,
     onQuit: () => app.quit(),
-    onSnooze: (until) => { settings.set('snoozeUntilEpochMs', until); tray.refresh(); },
-    onTogglePause: () => { settings.set('paused', !settings.get('paused')); tray.refresh(); },
+    onSnooze: (until) => { settings.set('snoozeUntilEpochMs', until); tray.refresh(); updateBarTitle(); },
+    onTogglePause: () => { settings.set('paused', !settings.get('paused')); tray.refresh(); updateBarTitle(); },
     onOpenLink: (url) => { if (typeof url === 'string' && /^https?:\/\//.test(url)) shell.openExternal(url); },
     onCheckForUpdates: () => updater.checkNow(),
     canUpdate: updater.canUpdate(),

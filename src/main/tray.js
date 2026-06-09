@@ -78,6 +78,9 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
     setStatus(line) { statusLine = line; build(); },
     setNextStart(ts) { nextStart = ts; },
     setAgenda(events) { agenda = Array.isArray(events) ? events : []; build(); },
+    // The countdown shown beside the icon in the menu bar. macOS only — on
+    // other platforms setTitle is a no-op, so the icon simply stands alone.
+    setTitle(text) { if (process.platform === 'darwin') tray.setTitle(text || ''); },
     refresh: build,
   };
 }

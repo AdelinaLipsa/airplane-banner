@@ -20,6 +20,9 @@ const DEFAULTS = {
   suppressInFullscreen: true,
   suppressInDnd: true,
   clickableBanner: false,
+  showCountdownInBar: true,
+  flightScreen: 'cursor', // 'cursor' = display under the pointer; 'primary' = main display
+  calendarColors: {},     // { [calendarId]: '#hex' } — optional per-calendar accent override
   launchAtLogin: true,
   pollIntervalMinutes: 5,
   snoozeUntilEpochMs: null,
