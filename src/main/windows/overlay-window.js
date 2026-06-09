@@ -16,6 +16,7 @@ function build() {
       preload: path.join(__dirname, 'overlay-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      autoplayPolicy: 'no-user-gesture-required', // let the flight chime / Rick Roll clip play
     },
   });
   win.setIgnoreMouseEvents(true);

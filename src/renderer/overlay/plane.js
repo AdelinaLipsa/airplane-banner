@@ -133,6 +133,23 @@ function playChime(name, volume) {
   if (window.AirplaneChimes) window.AirplaneChimes.playChime(name, volume);
 }
 
+// The Rick Roll craft plays the real clip (rickroll.mp3) rather than a chime;
+// fall back to the synth hook if the file can't play.
+let rickAudio = null;
+function playSound(payload) {
+  const vol = Math.min(1, Math.max(0, payload.soundVolume != null ? payload.soundVolume : 0.3));
+  if (payload.craft === 'rickroll') {
+    try {
+      if (rickAudio) rickAudio.pause();
+      rickAudio = new Audio('rickroll.mp3');
+      rickAudio.volume = vol;
+      rickAudio.play().catch(() => playChime('rickroll', vol));
+    } catch { playChime('rickroll', vol); }
+    return;
+  }
+  playChime(payload.soundName, payload.soundVolume);
+}
+
 // ── Opt-in click-to-join ────────────────────────────────────────────────────
 // The window forwards mousemove while click-through; we flip it interactive only
 // while the cursor is over the flying assembly, so clicks elsewhere pass through.
@@ -198,7 +215,7 @@ function playChimeOnEntry(payload) {
   const tick = () => {
     const r = aircraft.getBoundingClientRect();
     if (r.right > 0 && r.left < window.innerWidth) {
-      playChime(payload.soundName, payload.soundVolume);
+      playSound(payload);
       chimeRaf = 0;
       return;
     }
