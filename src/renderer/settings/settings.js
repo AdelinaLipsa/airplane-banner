@@ -129,6 +129,20 @@ function collect() {
 function updateDurLabel() { $('durLabel').textContent = $('flightDuration').value + 's'; }
 $('flightDuration').addEventListener('input', updateDurLabel);
 
+// The appearance subset the Test flight preview needs — read live from the form
+// so users can tune theme/duration/sound and fly it without saving first.
+function appearanceValues() {
+  return {
+    theme: $('theme').value,
+    flightDurationSeconds: parseInt($('flightDuration').value, 10) || 12,
+    showTitle: $('showTitle').checked,
+    sound: $('sound').checked,
+    soundName: $('soundName').value,
+    soundVolume: (parseInt($('soundVolume').value, 10) || 0) / 100,
+  };
+}
+$('testFlight').addEventListener('click', () => api.testFlight(appearanceValues()));
+
 // --- Live theme preview ----------------------------------------------------
 const PREVIEW_POP = { retro: '#f43f5e', aurora: '#a78bfa', sunset: '#f97316', mono: '#9ca3af' };
 function updateThemePreview() {

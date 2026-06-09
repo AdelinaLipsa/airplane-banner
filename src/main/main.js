@@ -69,6 +69,25 @@ ipcMain.handle('settings:save', (_e, patch) => {
   if (auth.hasValidAuth()) startPolling();
   return settings.getAll();
 });
+// Preview flight from the Settings "Test flight" button, using the values
+// currently in the form (even before Save). test:true bypasses the usual
+// fullscreen/DND suppression so the preview always shows.
+ipcMain.handle('settings:test-flight', (_e, a = {}) => {
+  flyBanner({
+    minutes: 10,
+    title: 'Test flight',
+    test: true,
+    showTitle: a.showTitle !== false,
+    theme: a.theme,
+    sound: !!a.sound,
+    soundName: a.soundName,
+    soundVolume: a.soundVolume,
+    durationSeconds: a.flightDurationSeconds,
+    clickable: false,
+  });
+  return true;
+});
+
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });
 ipcMain.handle('auth:signOut', () => { auth.signOut(); scheduler.clear(); settings.clearFired(); return true; });
 ipcMain.handle('auth:signOutAccount', (_e, id) => {

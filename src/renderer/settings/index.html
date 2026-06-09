@@ -3,25 +3,48 @@
 <head>
   <meta charset="utf-8" />
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; color: #1e1b4b; }
-    h1 { font-size: 18px; }
-    fieldset { border: 1px solid #ddd; border-radius: 8px; margin: 14px 0; padding: 12px; }
-    legend { font-weight: 600; }
+    /* Brand palette (Retro Arcade): indigo ink, yellow fabric, pink pop —
+       the same colors the banner flies in. Themed via vars so a single
+       prefers-color-scheme block flips the whole window to dark. */
+    :root {
+      color-scheme: light dark;
+      --bg: #fffdf5; --fg: #1e1b4b; --muted: #6b7280;
+      --card-bg: #ffffff; --card-border: #e7e3d8;
+      --field-bg: #ffffff; --field-border: #d6d3ca;
+      --legend: #1e1b4b; --accent: #1e1b4b; --accent-fg: #facc15; --pop: #f43f5e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14132b; --fg: #ece9ff; --muted: #9b97c4;
+        --card-bg: #1b1940; --card-border: #2c2a52;
+        --field-bg: #221f4a; --field-border: #3a3766;
+        --legend: #facc15; --accent: #facc15; --accent-fg: #1e1b4b; --pop: #fb7185;
+      }
+    }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; color: var(--fg); background: var(--bg); }
+    h1 { font-size: 18px; font-family: ui-monospace, Menlo, "Courier New", monospace; letter-spacing: 0.5px; }
+    fieldset { border: 1px solid var(--card-border); border-radius: 10px; margin: 14px 0; padding: 12px 14px; background: var(--card-bg); }
+    legend { font-weight: 700; font-family: ui-monospace, Menlo, "Courier New", monospace; color: var(--legend); padding: 0 6px; }
     label { display: block; margin: 8px 0; font-size: 14px; }
-    input[type=text], input[type=password] { width: 100%; padding: 6px; box-sizing: border-box; }
+    input[type=text], input[type=password], input[type=number], select {
+      padding: 6px; box-sizing: border-box; background: var(--field-bg); color: var(--fg);
+      border: 1px solid var(--field-border); border-radius: 6px; }
+    input[type=text], input[type=password] { width: 100%; }
     .row { display: flex; align-items: center; gap: 8px; }
-    button { background: #1e1b4b; color: #facc15; border: 0; border-radius: 6px;
+    button { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 6px;
              padding: 8px 14px; font-weight: 700; cursor: pointer; }
-    #status { font-size: 13px; color: #555; }
-    .save-bar { position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
-    .account { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin: 8px 0; }
+    button:hover { filter: brightness(1.06); }
+    #status { font-size: 13px; color: var(--muted); }
+    #saved { color: var(--pop); font-weight: 700; }
+    .save-bar { position: sticky; bottom: 0; background: var(--bg); padding-top: 10px; }
+    .account { border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin: 8px 0; }
     .account-head { display: flex; align-items: center; justify-content: space-between; }
     .account-email { font-weight: 600; font-size: 14px; }
-    .account-head button { background: #eee; color: #444; padding: 4px 10px; font-weight: 500; }
+    .account-head button { background: transparent; color: var(--muted); border: 1px solid var(--field-border); padding: 4px 10px; font-weight: 500; }
     .cal-list { margin: 6px 0 0; }
     .cal-list label { margin: 5px 0; }
-    .cal-primary { font-size: 11px; color: #888; }
-    .cal-empty { font-size: 12px; color: #888; margin: 6px 0 0; }
+    .cal-primary { font-size: 11px; color: var(--muted); }
+    .cal-empty { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
 
     /* Live theme preview — a tiny banner+plane loops across so the four styles
        can be compared without a Test flight. */
@@ -133,6 +156,10 @@
       </label>
     </div>
     <label class="row"><input id="clickableBanner" type="checkbox" /> Click the banner to join the meeting</label>
+    <div class="row" style="margin-top:12px">
+      <button id="testFlight" type="button">✈️ Test flight</button>
+      <span style="color:#888;font-size:12px">Preview with the settings above (no need to Save)</span>
+    </div>
   </fieldset>
 
   <fieldset>
