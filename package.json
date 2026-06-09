@@ -1,6 +1,6 @@
 {
   "name": "airplane-banner",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "An airplane flies a banner across your screen before Google Calendar meetings.",
   "main": "src/main/main.js",
   "scripts": {
