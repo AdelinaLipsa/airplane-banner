@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('settingsApi', {
+  platform: process.platform,
   load: () => ipcRenderer.invoke('settings:load'),
   save: (patch) => ipcRenderer.invoke('settings:save', patch),
   testFlight: (appearance) => ipcRenderer.invoke('settings:test-flight', appearance),

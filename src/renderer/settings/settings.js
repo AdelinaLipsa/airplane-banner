@@ -8,6 +8,15 @@ let calColors = {};
 // Absolute path to the user's custom craft image/GIF (when Aircraft = Custom).
 let customCraftPath = '';
 
+// Windows only: let the whole Settings window wear the selected theme. macOS
+// keeps its OS-driven light/dark look (no `win` class → themed CSS never matches).
+const IS_WIN = api && api.platform === 'win32';
+if (IS_WIN) document.documentElement.classList.add('win');
+function applyWindowTheme() {
+  if (!IS_WIN) return;
+  document.body.dataset.theme = $('theme').value || 'retro';
+}
+
 function updateCraftUI() {
   const craft = $('craft').value;
   $('customCraftRow').style.display = craft === 'custom' ? '' : 'none';
@@ -140,6 +149,7 @@ async function load() {
   $('showTitle').checked = c.showTitle;
   $('theme').value = c.theme || 'retro';
   updateThemePreview();
+  applyWindowTheme();
   $('flightDuration').value = c.flightDurationSeconds || 12;
   updateDurLabel();
   $('sound').checked = !!c.sound;
@@ -245,7 +255,7 @@ function updateThemePreview() {
   $('themePreview').dataset.theme = t;
   $('themePreview').style.setProperty('--prevPop', PREVIEW_POP[t] || '#f43f5e');
 }
-$('theme').addEventListener('change', updateThemePreview);
+$('theme').addEventListener('change', () => { updateThemePreview(); applyWindowTheme(); });
 
 // --- Working hours ---------------------------------------------------------
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

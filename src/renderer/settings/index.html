@@ -21,6 +21,35 @@
         --legend: #facc15; --accent: #facc15; --accent-fg: #1e1b4b; --pop: #fb7185;
       }
     }
+    /* Windows-only: the whole window adopts the selected theme. settings.js adds
+       `win` to <html> and sets body[data-theme]; these override the :root rules
+       above by specificity. macOS keeps the prefers-color-scheme path untouched.
+       All four are dark surfaces tinted to the theme, with the theme's signature
+       color as the accent. */
+    html.win body[data-theme="retro"] {
+      --bg: #14132b; --fg: #ece9ff; --muted: #9b97c4;
+      --card-bg: #1b1940; --card-border: #2c2a52;
+      --field-bg: #221f4a; --field-border: #3a3766;
+      --legend: #facc15; --accent: #facc15; --accent-fg: #1e1b4b; --pop: #fb7185;
+    }
+    html.win body[data-theme="aurora"] {
+      --bg: #07101c; --fg: #d7fbf3; --muted: #7fa9a2;
+      --card-bg: #0c1a2b; --card-border: #173243;
+      --field-bg: #102234; --field-border: #1e3d50;
+      --legend: #5eead4; --accent: #5eead4; --accent-fg: #07101c; --pop: #a78bfa;
+    }
+    html.win body[data-theme="sunset"] {
+      --bg: #2a0f1a; --fg: #ffe9ef; --muted: #c98a99;
+      --card-bg: #3a1623; --card-border: #52202f;
+      --field-bg: #43192a; --field-border: #6b2a3d;
+      --legend: #fb7185; --accent: #fb7185; --accent-fg: #2a0f1a; --pop: #f97316;
+    }
+    html.win body[data-theme="mono"] {
+      --bg: #0a0a0a; --fg: #fafafa; --muted: #9ca3af;
+      --card-bg: #141414; --card-border: #262626;
+      --field-bg: #1a1a1a; --field-border: #333333;
+      --legend: #fafafa; --accent: #fafafa; --accent-fg: #0a0a0a; --pop: #9ca3af;
+    }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; color: var(--fg); background: var(--bg); }
     h1 { font-size: 18px; font-family: ui-monospace, Menlo, "Courier New", monospace; letter-spacing: 0.5px; }
     /* Collapsible sections — native <details>/<summary> accordions. */
