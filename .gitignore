@@ -5,3 +5,4 @@ dist/
 out/
 *.log
 src/main/oauth-credentials.local.js
+src/renderer/settings/isolate.bundle.js

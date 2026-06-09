@@ -147,23 +147,33 @@ ipcMain.handle('settings:test-flight', (_e, a = {}) => {
   return true;
 });
 
-// Open a native file picker for a custom craft image/GIF. Copies the chosen file
-// into userData so it survives the original being moved, and returns the stored
-// path + a display name for the Settings UI.
-ipcMain.handle('settings:choose-craft', async () => {
+// Custom craft picking is a two-step dance so the renderer can isolate the
+// subject (background removal runs in the renderer, where the WASM model lives):
+//   1) pick-craft-file: open the dialog, return the raw file as a data URL.
+//   2) save-craft: persist the renderer's processed (cut-out) result to userData.
+ipcMain.handle('settings:pick-craft-file', async () => {
   const res = await dialog.showOpenDialog({
     title: 'Choose an image or GIF',
     properties: ['openFile'],
     filters: [{ name: 'Images', extensions: ['gif', 'png', 'webp', 'jpg', 'jpeg', 'apng'] }],
   });
   if (res.canceled || !res.filePaths.length) return null;
-  const srcPath = res.filePaths[0];
+  const p = res.filePaths[0];
+  const buf = fs.readFileSync(p);
+  return { name: path.basename(p), dataUrl: `data:${mimeForCraft(p)};base64,${buf.toString('base64')}` };
+});
+
+ipcMain.handle('settings:save-craft', (_e, dataUrl) => {
+  const m = /^data:([^;]+);base64,(.*)$/s.exec(dataUrl || '');
+  if (!m) return null;
+  const ext = { 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp',
+    'image/apng': '.apng', 'image/jpeg': '.jpg' }[m[1]] || '.png';
   const dir = path.join(app.getPath('userData'), 'crafts');
   fs.mkdirSync(dir, { recursive: true });
-  const dest = path.join(dir, 'custom' + path.extname(srcPath).toLowerCase());
-  fs.copyFileSync(srcPath, dest);
+  const dest = path.join(dir, 'custom' + ext);
+  fs.writeFileSync(dest, Buffer.from(m[2], 'base64'));
   craftCache = null; // force a re-read on the next flight
-  return { path: dest, name: path.basename(srcPath) };
+  return dest;
 });
 
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });

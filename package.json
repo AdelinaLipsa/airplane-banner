@@ -4,12 +4,17 @@
   "description": "An airplane flies a banner across your screen before Google Calendar meetings.",
   "main": "src/main/main.js",
   "scripts": {
+    "build:isolate": "esbuild src/renderer/settings/isolate.src.js --bundle --format=iife --platform=browser --target=es2020 --outfile=src/renderer/settings/isolate.bundle.js",
+    "prestart": "npm run build:isolate",
     "start": "electron .",
     "test": "node --test",
     "lint": "eslint .",
     "smoke": "electron .",
+    "predist": "npm run build:isolate",
     "dist": "electron-builder",
+    "predist:mac": "npm run build:isolate",
     "dist:mac": "electron-builder --mac",
+    "predist:win": "npm run build:isolate",
     "dist:win": "electron-builder --win"
   },
   "license": "MIT",
@@ -49,14 +54,18 @@
     "@eslint/js": "^10.0.1",
     "electron": "^31.0.0",
     "electron-builder": "^26.15.0",
+    "esbuild": "^0.28.0",
     "eslint": "^10.4.1",
     "globals": "^17.6.0"
   },
   "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
     "electron-log": "^5.4.4",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.8.9",
+    "gifuct-js": "^2.1.2",
     "google-auth-library": "^9.0.0",
-    "googleapis": "^140.0.0"
+    "googleapis": "^140.0.0",
+    "upng-js": "^2.1.0"
   }
 }

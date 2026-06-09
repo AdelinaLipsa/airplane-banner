@@ -197,10 +197,28 @@ $('testFlight').addEventListener('click', () => api.testFlight(appearanceValues(
 
 $('craft').addEventListener('change', updateCraftUI);
 $('chooseCraft').addEventListener('click', async () => {
-  const r = await api.chooseCraftFile();
-  if (r && r.path) {
-    customCraftPath = r.path;
-    $('craftFileName').textContent = r.name || r.path.split('/').pop();
+  const picked = await api.pickCraftFile();
+  if (!picked) return;
+  const status = $('craftFileName');
+  $('chooseCraft').disabled = true;
+  try {
+    status.textContent = 'Isolating subject…';
+    // isolate() removes the background (static images now; GIFs pass through
+    // until the per-frame pipeline lands). Reports model download + run progress.
+    const r = await window.AirplaneIsolate.isolate(picked.dataUrl, (frac, label) => {
+      status.textContent = `${label} ${Math.round(frac * 100)}%`;
+    });
+    const savedPath = await api.saveCraft(r.dataUrl);
+    if (savedPath) {
+      customCraftPath = savedPath;
+      status.textContent = r.animated
+        ? `${picked.name} — GIF kept whole (subject cutout coming soon)`
+        : (r.isolated ? `${picked.name} ✓ background removed` : picked.name);
+    }
+  } catch (e) {
+    status.textContent = 'Could not process image: ' + ((e && e.message) || e);
+  } finally {
+    $('chooseCraft').disabled = false;
   }
 });
 

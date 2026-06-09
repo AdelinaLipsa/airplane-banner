@@ -19,6 +19,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run build:isolate
       - run: npm run lint
       - run: npm test
       # Boot the real app headlessly (Xvfb) to catch startup/wiring crashes.
@@ -47,6 +48,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run build:isolate   # bundle the subject-isolation module into the app
 
       # The real OAuth client lives in repo secrets (Settings → Secrets and
       # variables → Actions): OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET. Without
