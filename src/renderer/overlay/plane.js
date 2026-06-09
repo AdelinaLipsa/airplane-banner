@@ -12,7 +12,7 @@ const propeller = document.getElementById('propeller');
 const CRAFTS = {
   tarom:    { src: 'plane.png', width: 320, aspectRatio: '836 / 213', propeller: true, shadow: true },
   ufo:      { src: 'ufo.png', width: 240, aspectRatio: '960 / 359', propeller: false, shadow: true },
-  rickroll: { src: 'rickroll.gif', width: 200, aspectRatio: '1 / 1', propeller: false, shadow: false, radius: 14 },
+  rickroll: { src: 'rickroll.webp', width: 200, aspectRatio: '1 / 1', propeller: false, shadow: true },
   kittens:  { src: 'kittens.webp', width: 220, aspectRatio: '400 / 300', propeller: false, shadow: true },
 };
 
