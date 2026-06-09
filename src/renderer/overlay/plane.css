@@ -31,11 +31,15 @@ body[data-theme="retro"] #banner { filter: drop-shadow(6px 6px 0 var(--pop)); }
   width: 20px;
   background-repeat: no-repeat;
   transform-origin: center;
+  /* duration + delay are set per-segment in plane.js for a flag-like ripple */
   animation: wave 2s infinite ease-in-out;
 }
+/* Per-segment --amp (set in plane.js) makes the free end flutter wider than the
+   tied end; the sway is asymmetric (up less than down) so it reads as gravity-
+   loaded cloth rather than a symmetric sine grid. */
 @keyframes wave {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(7px); }
+  0%, 100% { transform: translateY(calc(var(--amp, 7px) * -0.5)); }
+  50%      { transform: translateY(var(--amp, 7px)); }
 }
 
 /* Two waving tow-lines from the banner to the plane. */

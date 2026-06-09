@@ -56,11 +56,20 @@ function buildFabricBanner(text, theme) {
   img.onload = () => {
     const segW = 20;
     const count = Math.ceil(canvas.width / segW);
+    const last = Math.max(1, count - 1);
     for (let i = 0; i < count; i++) {
       const seg = document.createElement('div');
       seg.className = 'segment';
       seg.style.height = canvas.height + 'px';
-      seg.style.animationDelay = (i * 0.05) + 's';
+      // Fabric realism: a towed banner is tied to the rope at its right edge
+      // (highest i) and flaps free at the left. Flutter grows toward the free
+      // end, the ripple originates at the tied edge and travels outward, and
+      // the free end sways a touch slower — together that reads as cloth, not
+      // a rigid grid.
+      const free = 1 - i / last;            // 1 at the free (left) end → 0 at the rope
+      seg.style.setProperty('--amp', (2.5 + free * 9).toFixed(1) + 'px');
+      seg.style.animationDelay = (-i * 0.045).toFixed(3) + 's';
+      seg.style.animationDuration = (1.7 + free * 0.6).toFixed(2) + 's';
       seg.style.backgroundImage = `url(${url})`;
       seg.style.backgroundPositionX = (-segW * i) + 'px';
       banner.appendChild(seg);
