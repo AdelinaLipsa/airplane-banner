@@ -23,6 +23,10 @@ const DEFAULTS = {
   craft: 'tarom',          // which sprite tows the banner: tarom | ufo | rickroll | custom
   customCraftPath: '',     // absolute path to the user's own image/GIF when craft === 'custom'
   showCountdownInBar: true,
+  // Floating next-meeting pill above the taskbar — the elegant Windows answer to
+  // the menu-bar countdown (macOS already shows text by the icon). On by default
+  // on Windows, off on macOS.
+  floatingNote: process.platform === 'win32',
   flightScreen: 'cursor', // 'cursor' = display under the pointer; 'primary' = main display
   calendarColors: {},     // { [calendarId]: '#hex' } — optional per-calendar accent override
   launchAtLogin: true,

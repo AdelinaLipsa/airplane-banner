@@ -4,6 +4,7 @@ const path = require('path');
 const settings = require('./settings');
 const { createTray } = require('./tray');
 const { flyBanner } = require('./windows/overlay-window');
+const { createNoteWindow } = require('./windows/note-window');
 const { createScheduler } = require('./scheduler');
 const { openSettingsWindow } = require('./windows/settings-window');
 const presence = require('./presence');
@@ -208,10 +209,12 @@ ipcMain.handle('auth:status', () => ({
   accounts: (settings.get('accounts') || []).map((a) => ({ id: a.id, email: a.email, calendars: a.calendars || [] })),
 }));
 
+let note = null;        // floating next-meeting pill (Windows-friendly)
 let pollTimer = null;
 let barTimer = null;
 let nextStartMs = null; // start of the next meeting, for the live menu-bar countdown
 let nextTitle = null;   // its title, shown beside the countdown
+let nextLink = null;    // its join link, if any (used by the clickable pill)
 
 // Refresh the menu-bar title from current state. Paused/snoozed take precedence
 // over the countdown (a glyph beats a number you can't act on); otherwise show
@@ -243,6 +246,15 @@ function updateBarTitle() {
   else if (snoozed) tip = 'Airplane Banner — snoozed';
   else if (mins != null) tip = `Next: ${shortName || 'meeting'} in ${fmtUntil(mins)}`;
   tray.setTooltipText(tip);
+
+  // Floating pill: show only when enabled and a meeting is actually coming up.
+  if (note) {
+    if (settings.get('floatingNote') && !paused && !snoozed && mins != null) {
+      note.show(`${fmtBar(mins)} — ${shortName || 'meeting'}`);
+    } else {
+      note.hide();
+    }
+  }
 }
 
 // Humanize a minute count: "5 min", "1h 20m", "3h". Hours kick in at 60+ so a
@@ -338,7 +350,7 @@ function dedupeEvents(events) {
 
 async function poll() {
   const clients = auth.accountClients();
-  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); nextStartMs = null; nextTitle = null; updateBarTitle(); scheduleNextPoll(null); return; }
+  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); nextStartMs = null; nextTitle = null; nextLink = null; updateBarTitle(); scheduleNextPoll(null); return; }
   try {
     // Fetch at least 4h out, but always through end of today so the tray agenda
     // shows every remaining meeting (not just those in the next few hours).
@@ -361,6 +373,7 @@ async function poll() {
     }
     nextStartMs = events.length ? events[0].start : null;
     nextTitle = events.length ? events[0].title : null;
+    nextLink = events.length ? (events[0].conferenceLink || null) : null;
     updateBarTitle();
     scheduleNextPoll(events);
   } catch (err) {
@@ -398,6 +411,14 @@ app.whenReady().then(() => {
     canUpdate: updater.canUpdate(),
   });
   tray.setStatus('No calendar connected');
+  // Floating pill: clicking it joins the meeting if it has a link, else opens
+  // the tray menu.
+  note = createNoteWindow({
+    onClick: () => {
+      if (nextLink && /^https?:\/\//.test(nextLink)) shell.openExternal(nextLink);
+      else if (tray) tray.popUpMenu();
+    },
+  });
   settings.migrateLegacyAccount(); // move a pre-multi-account install's tokens
   applyLaunchAtLogin();
   // Arm reminders from the last cached events immediately, so a meeting that's

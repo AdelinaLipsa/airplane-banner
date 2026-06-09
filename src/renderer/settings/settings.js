@@ -150,6 +150,7 @@ async function load() {
   $('clickableBanner').checked = !!c.clickableBanner;
   $('launchAtLogin').checked = c.launchAtLogin;
   $('showCountdownInBar').checked = c.showCountdownInBar !== false;
+  $('floatingNote').checked = !!c.floatingNote;
   await refreshStatus();
 }
 
@@ -182,6 +183,7 @@ function collect() {
     clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
     showCountdownInBar: $('showCountdownInBar').checked,
+    floatingNote: $('floatingNote').checked,
     flightScreen: $('flightScreen').value,
     calendarColors: calColors,
     craft: $('craft').value,

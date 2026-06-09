@@ -84,6 +84,7 @@ function createTray({ onTestFlight, onTestSchedule, onOpenSettings, onQuit, onSn
     // Hover tooltip — works on every platform. On Windows the taskbar tray shows
     // only an icon, so this is the way the next meeting surfaces there.
     setTooltipText(text) { tray.setToolTip(text || 'Airplane Banner'); },
+    popUpMenu() { tray.popUpContextMenu(); },
     refresh: build,
   };
 }
