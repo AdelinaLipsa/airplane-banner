@@ -219,15 +219,30 @@ let nextTitle = null;   // its title, shown beside the countdown
 // between so the number ticks down on its own. Honors the user's toggle.
 function updateBarTitle() {
   if (!tray) return;
-  if (!settings.get('showCountdownInBar')) { tray.setTitle(''); return; }
-  if (settings.get('paused')) { tray.setTitle('⏸'); return; }
+  const paused = settings.get('paused');
   const snoozeUntil = settings.get('snoozeUntilEpochMs');
-  if (snoozeUntil && snoozeUntil > Date.now()) { tray.setTitle('💤'); return; }
-  if (!nextStartMs || nextStartMs <= Date.now()) { tray.setTitle(''); return; }
-  const mins = Math.max(0, Math.round((nextStartMs - Date.now()) / 60000));
-  // Show the meeting title beside the ETA, trimmed so it doesn't hog the bar.
-  const name = nextTitle ? ` - ${nextTitle.length > 22 ? nextTitle.slice(0, 21) + '…' : nextTitle}` : '';
-  tray.setTitle(fmtBar(mins) + name);
+  const snoozed = snoozeUntil && snoozeUntil > Date.now();
+  const mins = (nextStartMs && nextStartMs > Date.now())
+    ? Math.max(0, Math.round((nextStartMs - Date.now()) / 60000)) : null;
+  const shortName = nextTitle ? (nextTitle.length > 22 ? nextTitle.slice(0, 21) + '…' : nextTitle) : null;
+
+  // Text beside the icon — macOS only (Windows tray has no title text), and
+  // honors the toggle. Paused/snoozed glyphs beat a number you can't act on.
+  let title = '';
+  if (settings.get('showCountdownInBar')) {
+    if (paused) title = '⏸';
+    else if (snoozed) title = '💤';
+    else if (mins != null) title = fmtBar(mins) + (shortName ? ' - ' + shortName : '');
+  }
+  tray.setTitle(title);
+
+  // Hover tooltip — works on both platforms; on Windows it's the only way the
+  // next meeting shows in the taskbar tray (icon-only there).
+  let tip = 'Airplane Banner';
+  if (paused) tip = 'Airplane Banner — paused';
+  else if (snoozed) tip = 'Airplane Banner — snoozed';
+  else if (mins != null) tip = `Next: ${shortName || 'meeting'} in ${fmtUntil(mins)}`;
+  tray.setTooltipText(tip);
 }
 
 // Humanize a minute count: "5 min", "1h 20m", "3h". Hours kick in at 60+ so a
