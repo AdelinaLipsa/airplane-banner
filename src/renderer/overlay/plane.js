@@ -1,6 +1,35 @@
 const flight = document.getElementById('flight');
 const banner = document.getElementById('banner');
 const aircraft = document.getElementById('aircraft');
+const propeller = document.getElementById('propeller');
+
+// Swappable "crafts" — the thing that tows the banner. Built-ins live as files
+// next to this script. Each: src (relative file or data URL), box width + aspect
+// ratio (so non-plane art isn't stretched), and whether to draw the spinning
+// propeller and the themed hard shadow. A 'custom' craft (user's own image/GIF)
+// arrives fully resolved in the flight payload. Animated GIFs just play — the
+// renderer (Chromium) animates them for free.
+const CRAFTS = {
+  tarom:    { src: 'plane.png', width: 320, aspectRatio: '836 / 213', propeller: true, shadow: true },
+  ufo:      { src: 'ufo.webp', width: 230, aspectRatio: '1000 / 627', propeller: false, shadow: false, radius: 10 },
+  rickroll: { src: 'rickroll.gif', width: 200, aspectRatio: '1 / 1', propeller: false, shadow: false, radius: 14 },
+};
+
+function applyCraft(payload, popColor) {
+  let c;
+  if (payload.craft === 'custom' && payload.customCraft && payload.customCraft.src) {
+    c = Object.assign({ width: 240, aspectRatio: '1 / 1', propeller: false, shadow: false }, payload.customCraft);
+  } else {
+    c = CRAFTS[payload.craft] || CRAFTS.tarom;
+  }
+  aircraft.style.backgroundImage = `url("${c.src}")`;
+  aircraft.style.width = c.width + 'px';
+  aircraft.style.aspectRatio = c.aspectRatio;
+  aircraft.style.transform = c.flip ? 'scaleX(-1)' : '';
+  aircraft.style.filter = c.shadow ? `drop-shadow(5px 5px 0 ${popColor})` : 'none';
+  aircraft.style.borderRadius = c.radius ? c.radius + 'px' : '';
+  if (propeller) propeller.style.display = c.propeller ? '' : 'none';
+}
 
 // Palettes selectable in Settings. `fabric`/`ink` color the canvas banner;
 // `pop` is the hard drop-shadow behind the (natural-livery) plane sprite.
@@ -125,13 +154,15 @@ document.addEventListener('click', () => {
 function fly(payload) {
   const themeName = THEMES[payload.theme] ? payload.theme : 'retro';
   const theme = applyTheme(themeName);
-  // Optional per-calendar accent overrides the theme's pop color (plane shadow
+  // Optional per-calendar accent overrides the theme's pop color (craft shadow
   // + retro banner edge) while leaving the rest of the theme intact.
+  let popColor = theme.pop;
   if (typeof payload.accent === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(payload.accent)) {
-    document.documentElement.style.setProperty('--pop', payload.accent);
-    if (aircraft) aircraft.style.filter = `drop-shadow(5px 5px 0 ${payload.accent})`;
+    popColor = payload.accent;
+    document.documentElement.style.setProperty('--pop', popColor);
   }
   document.body.dataset.theme = themeName;
+  applyCraft(payload, popColor);
   const text = formatText(payload.minutes, payload.title, payload.showTitle !== false);
   if (themeName === 'retro') buildFabricBanner(text, theme);
   else buildFlatBanner(text);

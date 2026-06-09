@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('settingsApi', {
   load: () => ipcRenderer.invoke('settings:load'),
   save: (patch) => ipcRenderer.invoke('settings:save', patch),
   testFlight: (appearance) => ipcRenderer.invoke('settings:test-flight', appearance),
+  chooseCraftFile: () => ipcRenderer.invoke('settings:choose-craft'),
   signIn: () => ipcRenderer.invoke('auth:signIn'),
   signOut: () => ipcRenderer.invoke('auth:signOut'),
   signOutAccount: (id) => ipcRenderer.invoke('auth:signOutAccount', id),

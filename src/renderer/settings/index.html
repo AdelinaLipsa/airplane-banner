@@ -138,6 +138,18 @@
 
   <fieldset>
     <legend>Appearance</legend>
+    <label>Aircraft
+      <select id="craft">
+        <option value="tarom">TAROM plane (default)</option>
+        <option value="ufo">UFO</option>
+        <option value="rickroll">Rick Roll (dancing GIF)</option>
+        <option value="custom">Custom image / GIF…</option>
+      </select>
+    </label>
+    <div id="customCraftRow" class="row" style="margin-left:24px;display:none">
+      <button id="chooseCraft" type="button" style="padding:4px 10px">Choose file…</button>
+      <span id="craftFileName" style="color:var(--muted);font-size:12px"></span>
+    </div>
     <label>Banner theme
       <select id="theme">
         <option value="retro">Retro Arcade — yellow fabric, indigo, pink</option>

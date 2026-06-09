@@ -20,6 +20,8 @@ const DEFAULTS = {
   suppressInFullscreen: true,
   suppressInDnd: true,
   clickableBanner: false,
+  craft: 'tarom',          // which sprite tows the banner: tarom | ufo | rickroll | custom
+  customCraftPath: '',     // absolute path to the user's own image/GIF when craft === 'custom'
   showCountdownInBar: true,
   flightScreen: 'cursor', // 'cursor' = display under the pointer; 'primary' = main display
   calendarColors: {},     // { [calendarId]: '#hex' } — optional per-calendar accent override

@@ -5,6 +5,17 @@ const $ = (id) => document.getElementById(id);
 // with the rest of the form. { [calendarId]: '#hex' }; absent = use the theme.
 let calColors = {};
 
+// Absolute path to the user's custom craft image/GIF (when Aircraft = Custom).
+let customCraftPath = '';
+
+function updateCraftUI() {
+  const custom = $('craft').value === 'custom';
+  $('customCraftRow').style.display = custom ? '' : 'none';
+  $('craftFileName').textContent = customCraftPath
+    ? customCraftPath.split('/').pop()
+    : 'No file chosen';
+}
+
 async function refreshStatus() {
   const s = await api.authStatus();
   const accounts = s.accounts || [];
@@ -96,6 +107,9 @@ function buildColorControl(calId) {
 async function load() {
   const c = await api.load();
   calColors = c.calendarColors || {};
+  customCraftPath = c.customCraftPath || '';
+  $('craft').value = c.craft || 'tarom';
+  updateCraftUI();
   $('flightScreen').value = c.flightScreen || 'cursor';
   $('offsets').value = (c.reminderOffsetsMinutes || []).join(', ');
   $('respectEventReminders').checked = c.respectEventReminders !== false;
@@ -157,6 +171,8 @@ function collect() {
     showCountdownInBar: $('showCountdownInBar').checked,
     flightScreen: $('flightScreen').value,
     calendarColors: calColors,
+    craft: $('craft').value,
+    customCraftPath,
   };
 }
 
@@ -168,6 +184,8 @@ $('flightDuration').addEventListener('input', updateDurLabel);
 function appearanceValues() {
   return {
     theme: $('theme').value,
+    craft: $('craft').value,
+    customCraftPath,
     flightDurationSeconds: parseInt($('flightDuration').value, 10) || 12,
     showTitle: $('showTitle').checked,
     sound: $('sound').checked,
@@ -176,6 +194,15 @@ function appearanceValues() {
   };
 }
 $('testFlight').addEventListener('click', () => api.testFlight(appearanceValues()));
+
+$('craft').addEventListener('change', updateCraftUI);
+$('chooseCraft').addEventListener('click', async () => {
+  const r = await api.chooseCraftFile();
+  if (r && r.path) {
+    customCraftPath = r.path;
+    $('craftFileName').textContent = r.name || r.path.split('/').pop();
+  }
+});
 
 // --- Live theme preview ----------------------------------------------------
 const PREVIEW_POP = { retro: '#f43f5e', aurora: '#a78bfa', sunset: '#f97316', mono: '#9ca3af' };

@@ -1,4 +1,6 @@
-const { app, ipcMain, powerMonitor, shell } = require('electron');
+const { app, ipcMain, powerMonitor, shell, dialog } = require('electron');
+const fs = require('fs');
+const path = require('path');
 const settings = require('./settings');
 const { createTray } = require('./tray');
 const { flyBanner } = require('./windows/overlay-window');
@@ -17,6 +19,57 @@ const { filterEvents } = require('./calendar/filter');
 app.disableHardwareAcceleration();
 
 let tray = null;
+
+// --- Swappable craft resolution ------------------------------------------
+// Built-in crafts are files shipped beside the overlay; the renderer knows them
+// by id. A custom craft is the user's own image/GIF: read it once (cached by
+// path + mtime), sniff its pixel size, and hand the renderer a data URL plus an
+// aspect ratio so the box isn't stretched.
+let craftCache = null;
+
+function imageDims(buf) {
+  if (buf.length >= 24 && buf[0] === 0x89 && buf[1] === 0x50) {        // PNG
+    return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  }
+  if (buf.length >= 10 && buf[0] === 0x47 && buf[1] === 0x49) {        // GIF
+    return { w: buf[6] | (buf[7] << 8), h: buf[8] | (buf[9] << 8) };
+  }
+  if (buf.length >= 30 && buf.toString('ascii', 0, 4) === 'RIFF'       // WebP (VP8X)
+      && buf.toString('ascii', 8, 12) === 'WEBP' && buf.toString('ascii', 12, 16) === 'VP8X') {
+    return { w: 1 + (buf[24] | (buf[25] << 8) | (buf[26] << 16)), h: 1 + (buf[27] | (buf[28] << 8) | (buf[29] << 16)) };
+  }
+  return null;
+}
+
+function mimeForCraft(p) {
+  const ext = path.extname(p).toLowerCase();
+  return { '.gif': 'image/gif', '.png': 'image/png', '.webp': 'image/webp',
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.apng': 'image/png' }[ext] || 'application/octet-stream';
+}
+
+function resolveCustomCraft(p) {
+  if (!p) return null;
+  try {
+    const st = fs.statSync(p);
+    if (craftCache && craftCache.path === p && craftCache.mtimeMs === st.mtimeMs) return craftCache.descriptor;
+    const buf = fs.readFileSync(p);
+    const dims = imageDims(buf);
+    const descriptor = {
+      src: `data:${mimeForCraft(p)};base64,${buf.toString('base64')}`,
+      aspectRatio: dims ? `${dims.w} / ${dims.h}` : '1 / 1',
+      width: 240, propeller: false, shadow: false, radius: 12,
+    };
+    craftCache = { path: p, mtimeMs: st.mtimeMs, descriptor };
+    return descriptor;
+  } catch { return null; }
+}
+
+// Craft fields to merge into a flight payload, from a craft id + custom path.
+function craftPayload(craftId, customPath) {
+  return craftId === 'custom'
+    ? { craft: 'custom', customCraft: resolveCustomCraft(customPath) }
+    : { craft: craftId || 'tarom' };
+}
 
 const scheduler = createScheduler({
   getState: () => ({
@@ -51,6 +104,7 @@ const scheduler = createScheduler({
       durationSeconds: settings.get('flightDurationSeconds'),
       clickable: settings.get('clickableBanner'),
       flightScreen: settings.get('flightScreen'),
+      ...craftPayload(settings.get('craft'), settings.get('customCraftPath')),
     });
   },
   loadFired: () => settings.getFired(),
@@ -88,8 +142,28 @@ ipcMain.handle('settings:test-flight', (_e, a = {}) => {
     durationSeconds: a.flightDurationSeconds,
     clickable: false,
     flightScreen: settings.get('flightScreen'),
+    ...craftPayload(a.craft, a.customCraftPath),
   });
   return true;
+});
+
+// Open a native file picker for a custom craft image/GIF. Copies the chosen file
+// into userData so it survives the original being moved, and returns the stored
+// path + a display name for the Settings UI.
+ipcMain.handle('settings:choose-craft', async () => {
+  const res = await dialog.showOpenDialog({
+    title: 'Choose an image or GIF',
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['gif', 'png', 'webp', 'jpg', 'jpeg', 'apng'] }],
+  });
+  if (res.canceled || !res.filePaths.length) return null;
+  const srcPath = res.filePaths[0];
+  const dir = path.join(app.getPath('userData'), 'crafts');
+  fs.mkdirSync(dir, { recursive: true });
+  const dest = path.join(dir, 'custom' + path.extname(srcPath).toLowerCase());
+  fs.copyFileSync(srcPath, dest);
+  craftCache = null; // force a re-read on the next flight
+  return { path: dest, name: path.basename(srcPath) };
 });
 
 ipcMain.handle('auth:signIn', async () => { await auth.startAuthFlow(); startPolling(); return true; });
