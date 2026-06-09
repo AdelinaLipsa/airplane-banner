@@ -25,6 +25,26 @@
         { freq: A5, at: 0.14, dur: 0.5, type: 'triangle', harmonics: PLUCK, release: 0.5 },
       ],
     },
+    rickroll: {
+      // "Never gonna give you up / never gonna let you down" — a synthesized
+      // chiptune hook (we can't bundle the actual recording). Auto-plays with
+      // the Rick Roll craft; also selectable on its own.
+      label: 'Rick Roll 🎵', reverb: 0.16,
+      notes: [
+        { freq: 415.30, at: 0.00, dur: 0.15, type: 'square' }, // Ab4  Ne-
+        { freq: 415.30, at: 0.17, dur: 0.15, type: 'square' }, //      ver
+        { freq: 466.16, at: 0.34, dur: 0.15, type: 'square' }, // Bb4  gon-
+        { freq: 415.30, at: 0.51, dur: 0.15, type: 'square' }, //      na
+        { freq: 554.37, at: 0.70, dur: 0.28, type: 'square' }, // Db5  give you
+        { freq: 523.25, at: 0.98, dur: 0.44, type: 'square', release: 0.4 }, // C5 up
+        { freq: 415.30, at: 1.46, dur: 0.15, type: 'square' },
+        { freq: 415.30, at: 1.63, dur: 0.15, type: 'square' },
+        { freq: 466.16, at: 1.80, dur: 0.15, type: 'square' },
+        { freq: 415.30, at: 1.97, dur: 0.15, type: 'square' },
+        { freq: 622.25, at: 2.16, dur: 0.28, type: 'square' }, // Eb5  let you
+        { freq: 554.37, at: 2.44, dur: 0.52, type: 'square', release: 0.5 }, // Db5 down
+      ],
+    },
     airport: {
       label: 'Airport chime (bong)', reverb: 0.45, reverbDur: 2.2,
       notes: [

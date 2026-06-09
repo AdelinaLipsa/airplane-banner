@@ -71,6 +71,17 @@ function craftPayload(craftId, customPath) {
     : { craft: craftId || 'tarom' };
 }
 
+// Sound fields for a flight. The Rick Roll craft always rickrolls: its tune
+// plays at a guaranteed-audible volume regardless of the chime setting — that's
+// the whole joke. `s` is the saved-settings sound config (or the test form's).
+function soundFor(craftId, s) {
+  s = s || { sound: settings.get('sound'), soundName: settings.get('soundName'), soundVolume: settings.get('soundVolume') };
+  if (craftId === 'rickroll') {
+    return { sound: true, soundName: 'rickroll', soundVolume: Math.max(s.soundVolume || 0, 0.3) };
+  }
+  return { sound: !!s.sound, soundName: s.soundName, soundVolume: s.soundVolume };
+}
+
 const scheduler = createScheduler({
   getState: () => ({
     offsetsMinutes: settings.get('reminderOffsetsMinutes'),
@@ -93,18 +104,17 @@ const scheduler = createScheduler({
       }
     }
     const calColors = settings.get('calendarColors') || {};
+    const craft = craftPayload(settings.get('craft'), settings.get('customCraftPath'));
     flyBanner({
       ...payload,
       showTitle: settings.get('showTitle'),
       theme: settings.get('theme'),
       accent: payload.calendarId ? calColors[payload.calendarId] : undefined,
-      sound: settings.get('sound'),
-      soundName: settings.get('soundName'),
-      soundVolume: settings.get('soundVolume'),
+      ...soundFor(craft.craft),
       durationSeconds: settings.get('flightDurationSeconds'),
       clickable: settings.get('clickableBanner'),
       flightScreen: settings.get('flightScreen'),
-      ...craftPayload(settings.get('craft'), settings.get('customCraftPath')),
+      ...craft,
     });
   },
   loadFired: () => settings.getFired(),
@@ -130,19 +140,18 @@ ipcMain.handle('settings:save', (_e, patch) => {
 // currently in the form (even before Save). test:true bypasses the usual
 // fullscreen/DND suppression so the preview always shows.
 ipcMain.handle('settings:test-flight', (_e, a = {}) => {
+  const craft = craftPayload(a.craft, a.customCraftPath);
   flyBanner({
     minutes: 10,
     title: 'Test flight',
     test: true,
     showTitle: a.showTitle !== false,
     theme: a.theme,
-    sound: !!a.sound,
-    soundName: a.soundName,
-    soundVolume: a.soundVolume,
+    ...soundFor(craft.craft, { sound: !!a.sound, soundName: a.soundName, soundVolume: a.soundVolume }),
     durationSeconds: a.flightDurationSeconds,
     clickable: false,
     flightScreen: settings.get('flightScreen'),
-    ...craftPayload(a.craft, a.customCraftPath),
+    ...craft,
   });
   return true;
 });
@@ -202,6 +211,7 @@ ipcMain.handle('auth:status', () => ({
 let pollTimer = null;
 let barTimer = null;
 let nextStartMs = null; // start of the next meeting, for the live menu-bar countdown
+let nextTitle = null;   // its title, shown beside the countdown
 
 // Refresh the menu-bar title from current state. Paused/snoozed take precedence
 // over the countdown (a glyph beats a number you can't act on); otherwise show
@@ -215,7 +225,9 @@ function updateBarTitle() {
   if (snoozeUntil && snoozeUntil > Date.now()) { tray.setTitle('💤'); return; }
   if (!nextStartMs || nextStartMs <= Date.now()) { tray.setTitle(''); return; }
   const mins = Math.max(0, Math.round((nextStartMs - Date.now()) / 60000));
-  tray.setTitle(fmtBar(mins));
+  // Show the meeting title beside the ETA, trimmed so it doesn't hog the bar.
+  const name = nextTitle ? `  ${nextTitle.length > 22 ? nextTitle.slice(0, 21) + '…' : nextTitle}` : '';
+  tray.setTitle(fmtBar(mins) + name);
 }
 
 // Humanize a minute count: "5 min", "1h 20m", "3h". Hours kick in at 60+ so a
@@ -311,7 +323,7 @@ function dedupeEvents(events) {
 
 async function poll() {
   const clients = auth.accountClients();
-  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); nextStartMs = null; updateBarTitle(); scheduleNextPoll(null); return; }
+  if (!clients.length) { if (tray) tray.setStatus('Not signed in'); nextStartMs = null; nextTitle = null; updateBarTitle(); scheduleNextPoll(null); return; }
   try {
     // Fetch at least 4h out, but always through end of today so the tray agenda
     // shows every remaining meeting (not just those in the next few hours).
@@ -333,6 +345,7 @@ async function poll() {
       tray.setStatus(nextMeetingLine(events));
     }
     nextStartMs = events.length ? events[0].start : null;
+    nextTitle = events.length ? events[0].title : null;
     updateBarTitle();
     scheduleNextPoll(events);
   } catch (err) {
