@@ -4,17 +4,20 @@
   <meta charset="utf-8" />
   <style>
     html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; cursor: pointer; }
-    /* Brand pill (Retro Arcade): indigo body, yellow text, monospace. */
+    /* Themed pill — mirrors the flying banner: body = fabric, text = ink,
+       plane shadow = pop. CSS vars default to Retro Arcade; note.js overrides
+       them per the selected theme. */
+    :root { --pill-bg: #facc15; --pill-fg: #1e1b4b; --pill-pop: #f43f5e; }
     #pill {
       display: flex; align-items: center; gap: 7px;
       height: 34px; margin: 7px; padding: 0 13px; box-sizing: border-box;
-      background: #1e1b4b; color: #facc15;
+      background: var(--pill-bg); color: var(--pill-fg);
       border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 17px;
       font: 700 13px ui-monospace, Menlo, "Courier New", monospace;
       box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
       white-space: nowrap; overflow: hidden;
     }
-    #plane { filter: drop-shadow(1px 1px 0 #f43f5e); }
+    #plane { filter: drop-shadow(1px 1px 0 var(--pill-pop)); }
     #txt { overflow: hidden; text-overflow: ellipsis; }
   </style>
 </head>

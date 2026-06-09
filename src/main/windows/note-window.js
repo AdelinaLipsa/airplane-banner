@@ -5,6 +5,7 @@
 // steals focus; clicking it joins the meeting or opens the tray menu.
 const { BrowserWindow, screen, ipcMain } = require('electron');
 const path = require('path');
+const { paletteFor } = require('../themes');
 
 let win = null;
 const W = 240;
@@ -39,9 +40,15 @@ function position(w) {
 function createNoteWindow({ onClick }) {
   ipcMain.on('note-click', () => { if (onClick) onClick(); });
   return {
-    show(text) {
+    show(text, theme) {
       const w = win || build();
-      const paint = () => { position(w); w.showInactive(); w.webContents.send('note-text', text); };
+      const palette = paletteFor(theme);
+      const paint = () => {
+        position(w);
+        w.showInactive();
+        w.webContents.send('note-theme', palette);
+        w.webContents.send('note-text', text);
+      };
       if (w.webContents.isLoading()) w.webContents.once('did-finish-load', paint);
       else paint();
     },

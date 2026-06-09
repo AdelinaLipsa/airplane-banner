@@ -250,7 +250,7 @@ function updateBarTitle() {
   // Floating pill: show only when enabled and a meeting is actually coming up.
   if (note) {
     if (settings.get('floatingNote') && !paused && !snoozed && mins != null) {
-      note.show(`${fmtBar(mins)} — ${shortName || 'meeting'}`);
+      note.show(`${fmtBar(mins)} — ${shortName || 'meeting'}`, settings.get('theme'));
     } else {
       note.hide();
     }
