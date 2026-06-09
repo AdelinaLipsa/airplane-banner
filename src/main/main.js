@@ -226,7 +226,7 @@ function updateBarTitle() {
   if (!nextStartMs || nextStartMs <= Date.now()) { tray.setTitle(''); return; }
   const mins = Math.max(0, Math.round((nextStartMs - Date.now()) / 60000));
   // Show the meeting title beside the ETA, trimmed so it doesn't hog the bar.
-  const name = nextTitle ? `  ${nextTitle.length > 22 ? nextTitle.slice(0, 21) + '…' : nextTitle}` : '';
+  const name = nextTitle ? ` - ${nextTitle.length > 22 ? nextTitle.slice(0, 21) + '…' : nextTitle}` : '';
   tray.setTitle(fmtBar(mins) + name);
 }
 
