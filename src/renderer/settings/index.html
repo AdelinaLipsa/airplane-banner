@@ -45,6 +45,10 @@
     .cal-list label { margin: 5px 0; }
     .cal-primary { font-size: 11px; color: var(--muted); }
     .cal-empty { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+    .cal-color { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+    .cal-color input[type=color] { width: 26px; height: 20px; padding: 0; border: 1px solid var(--field-border); border-radius: 4px; cursor: pointer; }
+    .cal-color input[type=color]:disabled { opacity: 0.35; cursor: default; }
+    .cal-list label.row { display: flex; align-items: center; }
 
     /* Live theme preview — a tiny banner+plane loops across so the four styles
        can be compared without a Test flight. */
@@ -116,6 +120,12 @@
     </div>
     <label class="row" style="margin-top:10px"><input id="suppressInFullscreen" type="checkbox" /> Don’t fly while another app is fullscreen (e.g. presenting)</label>
     <label class="row"><input id="suppressInDnd" type="checkbox" /> Don’t fly while a Focus / Do Not Disturb is on</label>
+    <label style="margin-top:10px">Fly on
+      <select id="flightScreen">
+        <option value="cursor">The screen my cursor is on</option>
+        <option value="primary">My primary screen</option>
+      </select>
+    </label>
   </fieldset>
 
   <fieldset>

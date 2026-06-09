@@ -1,6 +1,10 @@
 const api = window.settingsApi;
 const $ = (id) => document.getElementById(id);
 
+// Per-calendar banner accent overrides, edited in the accounts list and saved
+// with the rest of the form. { [calendarId]: '#hex' }; absent = use the theme.
+let calColors = {};
+
 async function refreshStatus() {
   const s = await api.authStatus();
   const accounts = s.accounts || [];
@@ -55,6 +59,7 @@ function renderAccounts(accounts) {
           badge.textContent = '  (primary)';
           label.appendChild(badge);
         }
+        label.appendChild(buildColorControl(cal.id));
         wrap.appendChild(label);
       }
       box.appendChild(wrap);
@@ -63,8 +68,35 @@ function renderAccounts(accounts) {
   }
 }
 
+// A per-calendar color toggle + swatch. The checkbox turns the override on/off
+// (off = use the theme); the picker sets the hex. Edits live in calColors and
+// persist on Save. Clicks are kept from toggling the calendar's own checkbox.
+function buildColorControl(calId) {
+  const wrap = document.createElement('span');
+  wrap.className = 'cal-color';
+  wrap.addEventListener('click', (e) => e.stopPropagation());
+  const has = Object.prototype.hasOwnProperty.call(calColors, calId);
+  const en = document.createElement('input');
+  en.type = 'checkbox';
+  en.checked = has;
+  en.title = 'Use a custom banner color for this calendar';
+  const picker = document.createElement('input');
+  picker.type = 'color';
+  picker.value = has ? calColors[calId] : '#f43f5e';
+  picker.disabled = !has;
+  en.addEventListener('change', () => {
+    if (en.checked) { calColors[calId] = picker.value; picker.disabled = false; }
+    else { delete calColors[calId]; picker.disabled = true; }
+  });
+  picker.addEventListener('input', () => { calColors[calId] = picker.value; en.checked = true; picker.disabled = false; });
+  wrap.append(en, picker);
+  return wrap;
+}
+
 async function load() {
   const c = await api.load();
+  calColors = c.calendarColors || {};
+  $('flightScreen').value = c.flightScreen || 'cursor';
   $('offsets').value = (c.reminderOffsetsMinutes || []).join(', ');
   $('respectEventReminders').checked = c.respectEventReminders !== false;
   const ah = c.activeHours || {};
@@ -123,6 +155,8 @@ function collect() {
     clickableBanner: $('clickableBanner').checked,
     launchAtLogin: $('launchAtLogin').checked,
     showCountdownInBar: $('showCountdownInBar').checked,
+    flightScreen: $('flightScreen').value,
+    calendarColors: calColors,
   };
 }
 

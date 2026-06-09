@@ -15,7 +15,7 @@ function computeReminders(events, offsetsMinutes, now, opts = {}) {
     for (const offset of offsets) {
       const fireAt = event.start - offset * MIN;
       if (fireAt > now) {
-        out.push({ eventId: event.id, offset, fireAt, minutes: offset, title: event.title, startAt: event.start, link: event.conferenceLink || null });
+        out.push({ eventId: event.id, offset, fireAt, minutes: offset, title: event.title, startAt: event.start, link: event.conferenceLink || null, calendarId: event.calendarId || null });
       }
     }
   }
@@ -76,7 +76,7 @@ function createScheduler({ getState, onFly, loadFired, saveFired }) {
       // after the laptop woke from sleep), not the originally-configured offset.
       const startAt = reminder.startAt != null ? reminder.startAt : reminder.fireAt + reminder.offset * MIN;
       const liveMinutes = Math.max(0, Math.round((startAt - Date.now()) / MIN));
-      onFly({ minutes: liveMinutes, title: reminder.title, link: reminder.link });
+      onFly({ minutes: liveMinutes, title: reminder.title, link: reminder.link, calendarId: reminder.calendarId });
     }, Math.max(delay, 0));
     timers.set(key, t);
   }

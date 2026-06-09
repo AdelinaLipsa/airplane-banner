@@ -39,15 +39,18 @@ const scheduler = createScheduler({
         if (presence.shouldSuppressForPresence(states, prefs)) return;
       }
     }
+    const calColors = settings.get('calendarColors') || {};
     flyBanner({
       ...payload,
       showTitle: settings.get('showTitle'),
       theme: settings.get('theme'),
+      accent: payload.calendarId ? calColors[payload.calendarId] : undefined,
       sound: settings.get('sound'),
       soundName: settings.get('soundName'),
       soundVolume: settings.get('soundVolume'),
       durationSeconds: settings.get('flightDurationSeconds'),
       clickable: settings.get('clickableBanner'),
+      flightScreen: settings.get('flightScreen'),
     });
   },
   loadFired: () => settings.getFired(),
@@ -84,6 +87,7 @@ ipcMain.handle('settings:test-flight', (_e, a = {}) => {
     soundVolume: a.soundVolume,
     durationSeconds: a.flightDurationSeconds,
     clickable: false,
+    flightScreen: settings.get('flightScreen'),
   });
   return true;
 });

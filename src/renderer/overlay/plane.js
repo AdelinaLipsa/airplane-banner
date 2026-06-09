@@ -125,6 +125,12 @@ document.addEventListener('click', () => {
 function fly(payload) {
   const themeName = THEMES[payload.theme] ? payload.theme : 'retro';
   const theme = applyTheme(themeName);
+  // Optional per-calendar accent overrides the theme's pop color (plane shadow
+  // + retro banner edge) while leaving the rest of the theme intact.
+  if (typeof payload.accent === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(payload.accent)) {
+    document.documentElement.style.setProperty('--pop', payload.accent);
+    if (aircraft) aircraft.style.filter = `drop-shadow(5px 5px 0 ${payload.accent})`;
+  }
   document.body.dataset.theme = themeName;
   const text = formatText(payload.minutes, payload.title, payload.showTitle !== false);
   if (themeName === 'retro') buildFabricBanner(text, theme);

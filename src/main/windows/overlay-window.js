@@ -28,11 +28,13 @@ function build() {
   return win;
 }
 
-// Move the overlay to whichever display the cursor is currently on, so the
-// banner flies across the screen the user is actually looking at.
-function positionOnActiveDisplay(w) {
-  const point = screen.getCursorScreenPoint();
-  const b = screen.getDisplayNearestPoint(point).bounds;
+// Position the overlay before each flight. 'primary' pins it to the main
+// display; 'cursor' (default) follows the pointer so the banner flies across
+// the screen the user is actually looking at.
+function positionForFlight(w, mode) {
+  const b = mode === 'primary'
+    ? screen.getPrimaryDisplay().bounds
+    : screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).bounds;
   w.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height });
 }
 
@@ -41,7 +43,7 @@ function showFlight(w, p) {
   // renderer can make just the banner interactive; otherwise stay click-through.
   const forward = !!(p.clickable && p.link);
   w.setIgnoreMouseEvents(true, { forward });
-  positionOnActiveDisplay(w);
+  positionForFlight(w, p.flightScreen);
   w.showInactive();
   w.webContents.send('fly', p);
 }
