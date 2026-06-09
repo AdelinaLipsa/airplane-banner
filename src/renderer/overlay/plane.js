@@ -11,7 +11,7 @@ const propeller = document.getElementById('propeller');
 // renderer (Chromium) animates them for free.
 const CRAFTS = {
   tarom:    { src: 'plane.png', width: 320, aspectRatio: '836 / 213', propeller: true, shadow: true },
-  ufo:      { src: 'ufo.webp', width: 230, aspectRatio: '1000 / 627', propeller: false, shadow: false, radius: 10 },
+  ufo:      { src: 'ufo.png', width: 240, aspectRatio: '960 / 359', propeller: false, shadow: true },
   rickroll: { src: 'rickroll.gif', width: 200, aspectRatio: '1 / 1', propeller: false, shadow: false, radius: 14 },
 };
 
