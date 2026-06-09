@@ -20,6 +20,13 @@ function updateCraftUI() {
   $('rickSoundNote').style.display = rick ? '' : 'none';
   for (const id of ['sound', 'soundName', 'soundVolume', 'soundPreview']) $(id).disabled = rick;
   updateSoundOpts();
+  // Reflect the chosen aircraft in the live preview (it otherwise always shows
+  // the plane). Custom uses the processed file via file://.
+  const src = craft === 'custom'
+    ? (customCraftPath ? 'file://' + customCraftPath : '../overlay/plane.png')
+    : ({ ufo: '../overlay/ufo.png', rickroll: '../overlay/rickroll.gif' }[craft] || '../overlay/plane.png');
+  const mini = document.querySelector('.mini-plane');
+  if (mini) mini.src = src;
 }
 
 async function refreshStatus() {
@@ -220,6 +227,7 @@ $('chooseCraft').addEventListener('click', async () => {
       status.textContent = r.animated
         ? `${picked.name} — GIF kept whole (subject cutout coming soon)`
         : (r.isolated ? `${picked.name} ✓ background removed` : picked.name);
+      updateCraftUI(); // show the picked image in the live preview
     }
   } catch (e) {
     status.textContent = 'Could not process image: ' + ((e && e.message) || e);
